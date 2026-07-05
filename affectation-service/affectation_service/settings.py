@@ -140,7 +140,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'affectation-sonatrach',
         'USER': 'root',  # Ou un autre utilisateur
-        'PASSWORD': 'root',
+        'PASSWORD': 'rootpassword',
         'HOST': 'localhost',
         'PORT': '3306',  # Port par défaut de MySQL
     }

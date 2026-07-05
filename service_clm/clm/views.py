@@ -1196,6 +1196,37 @@ def upload_contrat_pdf(request):
         parsed_with_meta['metadonnees'] = metadonnees_parsees
         risques_bruts  = analyser_risques(parsed_with_meta, texte_extrait)
         risques_sauves = _save_risques(contrat, risques_bruts)
+        # ── Notification automatique des risques RETARD ────────────────
+        # Lire les risques retard tels que sauvegardés en base Django
+        # (même logique que analyser_contrat, pour garder occurrence_count
+        # et le niveau d'escalade cohérents avec ce qui est déjà persisté)
+        risques_retard_bdd = RisqueContrat.objects.filter(
+            contrat=contrat,
+            type_risque='retard',
+            resolu=False,
+        )
+
+        risques_a_notifier = [
+            {
+                'code':             r.code,
+                'type':             r.type_risque,
+                'description':      r.description,
+                'severite':         r.severite,
+                'article_ref':      r.article_ref or '',
+                'suggestion':       r.suggestion or '',
+                'occurrence_count': r.occurrence_count,
+                'escalade':         get_niveau_escalade(r.occurrence_count),
+            }
+            for r in risques_retard_bdd
+        ]
+
+        try:
+            notif_result = envoyer_alertes_risque(contrat_id=contrat.id, risques=risques_a_notifier, jwt_token=token)
+            logger.info(f'[UPLOAD] Notification risques retard → {notif_result}')
+        except Exception as exc_notif:
+            # Ne jamais faire échouer l'upload si la notification échoue
+            logger.error(f'[UPLOAD] Échec notification risques retard : {exc_notif}', exc_info=True)
+            notif_result = {'success': False, 'sent_count': 0, 'errors': [str(exc_notif)]}
 
         # ── Rapport ───────────────────────────────────────────────────
         champs_obligatoires = [
@@ -1259,6 +1290,8 @@ def upload_contrat_pdf(request):
                     'imprecision': len(risques_par_type[TYPE_IMPRECISION]),
                     'different':   len(risques_par_type[TYPE_DIFFERENT]),
                 },
+             'notification': notif_result,   # ← AJOUT : résultat de l'envoi vers Mongo/Node
+
                 'critique_count': sum(1 for r in risques_sauves if r['severite'] == SEV_CRITIQUE),
                 'detail':         risques_sauves,
             },

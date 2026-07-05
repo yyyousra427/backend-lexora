@@ -23,7 +23,6 @@ app.use(morgan('dev'));
 app.get('/health', (req, res) => res.json({ status: 'UP', service: 'service-juridique' }));
 app.get('/info',   (req, res) => res.json({ app: 'service-juridique' }));
 
-app.use('/notifications/risk-alerts', riskAlertRoutes);
 
 app.use('/juridique/directions',   directionRoutes);
 app.use('/juridique/departements', departementRoutes);

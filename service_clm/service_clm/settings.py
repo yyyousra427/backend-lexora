@@ -145,9 +145,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'clm_sounatrach',
         'USER': 'root',  # Ou un autre utilisateur
-        'PASSWORD': 'root',
+        'PASSWORD': 'rootpassword',
         'HOST': 'localhost',
-        'PORT': '3307',  # Port par défaut de MySQL
+        'PORT': '3306',  # Port par défaut de MySQL
     }
 }
 

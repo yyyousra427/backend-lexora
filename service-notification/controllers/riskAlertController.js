@@ -141,7 +141,8 @@ exports.getRiskAlerts = async (req, res) => {
                 };
             })
         );
-
+console.log('[DEBUG] filter utilisé:', filter);
+console.log('[DEBUG] nombre trouvé:', alerts.length, '/ total:', total);
         res.json({
             alerts: enriched,
             total,
@@ -226,6 +227,7 @@ exports.getRiskAlert = async (req, res) => {
             return res.status(404).json({ error: 'Alerte non trouvée' });
         }
         const count = await RiskAlert.countOccurrences(alert.contrat_id, alert.code);
+
         res.json({
             ...alert.toObject(),
             occurrence_count: count,
