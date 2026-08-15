@@ -50,8 +50,9 @@ Symptom → cause → fix, for the failure modes this specific stack actually pr
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| `TesseractNotFoundError` | Binary missing or not on PATH for the service user | `sudo apt install tesseract-ocr tesseract-ocr-fra`; or set `TESSERACT_CMD` in `service_clm` settings |
-| OCR returns garbage/empty text for French contracts | French language pack missing | `sudo apt install tesseract-ocr-fra`; verify with `tesseract --list-langs` |
+| `TesseractNotFoundError` | Binary missing or not on PATH for the service user | `sudo apt install tesseract-ocr tesseract-ocr-fra`; or set `TESSERACT_CMD` in `service_clm/.env` |
+| OCR returns garbage/empty text for French contracts | French language pack missing (default lang is `fra+eng` — both packs required) | `sudo apt install tesseract-ocr-fra`; verify `tesseract --list-langs` shows `fra` and `eng` |
+| Large scanned contract analysis dies with 502/504 after ~5 min | OCR at 300 DPI takes ~5–15 s/page on 2 vCores; a 30+-page scan can exceed the 300 s gunicorn/nginx timeouts | Set `PDF_OCR_DPI=200` in `service_clm/.env` (≈2× faster, still readable), or raise `--timeout` in `lexora-clm.service` and `proxy_read_timeout` in nginx to 600 |
 
 ## Where the logs are
 

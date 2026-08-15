@@ -72,6 +72,17 @@ curl -s -o /dev/null -w '%{http_code}\n' $BASE/uploads/<returned-filename>
 
 Uploading a file larger than a few MB also verifies the nginx `client_max_body_size` setting.
 
+## 6b. OCR path (scanned PDF)
+
+Native-text PDFs don't exercise Tesseract — test with a **scanned** document (or print a page and scan/photograph it into a PDF):
+
+```bash
+# upload a scanned PDF through the CLM create-from-pdf endpoint
+curl -s -H "Authorization: Bearer $TOKEN" -F "pdf=@scanned-contract.pdf" $BASE/clm/contrats/create-from-pdf/
+```
+
+The response's extraction info must report method **`ocr`** (not `native`) with non-empty text. If it fails, work through the OCR rows in [10-troubleshooting.md](10-troubleshooting.md). Note: re-analysis (`/clm/contrats/<id>/analyser/`) reuses the stored text and never re-runs OCR — only fresh uploads exercise Tesseract.
+
 ## 7. CLM → notification chain
 
 Trigger a contract analysis that produces a risk alert (via the frontend or `POST` to the CLM API), then:

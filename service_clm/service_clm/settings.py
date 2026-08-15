@@ -220,8 +220,10 @@ cloudinary.config(
 )
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
-# Chemin explicite du binaire Tesseract si absent du PATH (lu par clm/ocr_utils.py)
-TESSERACT_CMD = config('TESSERACT_CMD', default=None)
+# OCR (lu par clm/ocr_utils.py)
+TESSERACT_CMD  = config('TESSERACT_CMD', default=None)      # chemin binaire si absent du PATH
+TESSERACT_LANG = config('TESSERACT_LANG', default='fra+eng')
+PDF_OCR_DPI    = config('PDF_OCR_DPI', default=300, cast=int)  # baisser à 200 si OCR trop lent
 
 # MEDIA_URL = '/media/
 # URL du service Notification (via Spring Cloud Gateway)
