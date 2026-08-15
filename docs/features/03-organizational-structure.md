@@ -55,6 +55,6 @@ Extras beyond plain CRUD:
 ## Known quirks (verified in code)
 
 - **The startup banner lies**: `server.js` advertises `GET /juridique/directions/organigramme`, but that route is commented out in `directionRoutes.js`. The working organigramme lives at `/juridique/directions-centrales/:id/organigramme`.
-- **Bug — activité update**: in `activiteRoutes.js`, `PUT /juridique/activites/:id` is wired to `ctrl.create` instead of `ctrl.update`. Updating an activité will attempt a create.
+- ~~Bug — activité update~~ **Fixed (Aug 2026)**: `PUT /juridique/activites/:id` was wired to `ctrl.create`; it now calls `ctrl.update`.
 - Route naming is inconsistent: plural (`directions`) vs singular (`structure`, `division`) vs snake_case junctions (`direction_activite`) — clients must match exactly.
 - `seed.js` (initial org data) is entirely commented out; reference data enters through the admin CRUD endpoints.

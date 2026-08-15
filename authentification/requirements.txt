@@ -47,3 +47,6 @@ py-eureka-client==0.11.8
 django-cors-headers>=4.4,<4.5
 jsonschema>=4.20,<5.0
 xmltodict>=0.13,<0.14
+
+# Static files (admin) sous gunicorn
+whitenoise>=6.7,<7.0

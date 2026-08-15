@@ -1,8 +1,26 @@
+# Python virtualenvs & cache
 venv/
 */venv/
-authentication/venv/
 venv2/
-*/venv/
-# Python cache
 __pycache__/
 *.pyc
+
+# Environment files — real secrets live only on each machine.
+# Templates are kept as *.env.example / config.env.example.
+.env
+config.env
+**/.env
+**/config.env
+!.env.example
+!**/.env.example
+!**/config.env.example
+
+# Node
+node_modules/
+
+# Django artifacts
+staticfiles/
+db.sqlite3
+
+# Java build output
+target/

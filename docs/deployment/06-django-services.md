@@ -2,31 +2,11 @@
 
 Three services, same recipe each: virtualenv → dependencies → migrate → collectstatic → gunicorn unit. Ports are fixed by the gateway routes: **8010** authentification, **8011** affectation-service, **8012** service_clm.
 
-## 0. Fix `service_clm/requirements.txt` first (one-time)
+## 0. `service_clm/requirements.txt`
 
-The committed file is a UTF-16 `pip freeze` of an entire dev machine (~190 packages incl. TensorFlow and Jupyter). `pip install -r` fails on it. Replace it entirely:
+> ✅ **Already fixed in the repository** (Aug 2026): the committed file is now a curated UTF-8 list (Django, DRF, mysqlclient, PyMuPDF, pytesseract, whitenoise, gunicorn, …) — the old UTF-16 `pip freeze` dump is gone. No action needed on a current checkout.
 
-```bash
-cat > /opt/lexora/service_clm/requirements.txt <<'EOF'
-Django>=5.1,<5.2
-djangorestframework>=3.15,<3.16
-djangorestframework-simplejwt>=5.3,<5.4
-mysqlclient>=2.2,<3.0
-django-cors-headers>=4.4,<4.5
-python-decouple==3.8
-py-eureka-client==0.11.8
-requests>=2.32
-cloudinary>=1.39,<2.0
-django-cloudinary-storage==0.3.0
-Pillow>=10.0,<11.0
-PyMuPDF>=1.26
-pytesseract>=0.3.13
-whitenoise>=6.7
-gunicorn>=22.0
-EOF
-```
-
-If a later `ImportError` names a missing package, add that one package — do not restore the old file.
+If a later `ImportError` names a missing package, add that one package to the file — never restore an old freeze dump.
 
 ## 1. authentification (port 8010)
 
@@ -39,13 +19,7 @@ python3 -m venv .venv
 .venv/bin/python manage.py createsuperuser        # first admin account
 ```
 
-Enable WhiteNoise so admin static files work with `DEBUG=False` — in `authentification/authentification/settings.py`, add to `MIDDLEWARE` directly after `SecurityMiddleware`:
-
-```python
-'whitenoise.middleware.WhiteNoiseMiddleware',
-```
-
-(Repeat this middleware line in the other two services as well.)
+> ✅ WhiteNoise middleware and `STATIC_ROOT` are **already in the code** for all three services — no settings edits needed; `collectstatic` above is the only static-files step.
 
 ```bash
 sudo nano /etc/systemd/system/lexora-auth.service

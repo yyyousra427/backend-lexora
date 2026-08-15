@@ -53,10 +53,10 @@ There are no real test suites: Django apps have stub `tests.py` (`python manage.
 
 ## Conventions and gotchas
 
-- Config lives in committed dotenv files: `.env` for Django services and service-notification, `config.env` for service-juridique and bib-juridique. Secrets (JWT secret, DB passwords, SMTP, Cloudinary) are hardcoded — this is a dev/lab setup; don't spread them further, and prefer env vars for new config.
+- Config lives in dotenv files: `.env` for Django services and service-notification, `config.env` for service-juridique and bib-juridique, with committed `*.env.example` templates documenting the shape. Django settings read everything via `python-decouple` (`DEBUG` defaults to False; dev `.env` sets it True). Put new config in env vars, never hardcoded.
 - Node services follow the same layout: `app.js` (Express app + routes) / `server.js` (Mongo connect, listen, Eureka register) / `routes/`, `controllers/`, `middleware/`, `models/`, `services/` (Eureka client in `services/eurekaService.js`).
 - Django services follow the same pattern as `authentification`: one API app with `serializers.py`, `views.py`, `permissions.py`, plus per-service `discovery.py` (Eureka lookup with 60s cache, falls back to gateway when `USE_EUREKA=false`) for calling other services.
 - `bib-juridique` stores uploads on disk under `src/uploads/` and serves them at `/uploads`; the gateway exposes that path publicly.
 - `service_clm` sends notifications to `service-notification` via `clm/notification_client.py`; risk alerts land on `/notifications/risk-alerts` (unauthenticated route, unlike the rest of that service).
-- `CODE_VERIFICATION_REPORT.md` at the repo root documents known issues (DEBUG=True, empty `ALLOWED_HOSTS`, JDK mismatch) — consult it before "discovering" these again.
+- Known issues and technical debt are tracked as G-1…G-13 in `docs/TECHNICAL_REPORT.md` §9 — consult it before "discovering" them again. (`docs/archive/CODE_VERIFICATION_REPORT.md` is the superseded pre-hardening snapshot.)
 - `docs/deployment/` contains the step-by-step VPS deployment guide, `docs/TECHNICAL_REPORT.md` the full technical inventory, and `docs/features/` per-feature endpoint/domain documentation — keep them in sync when changing ports, env variables, service names, or routes.

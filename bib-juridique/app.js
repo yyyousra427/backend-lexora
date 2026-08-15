@@ -29,12 +29,13 @@ app.use("/uploads", express.static(uploadsPath));
 
 // Health check
 app.get("/health", (req, res) => {
+    let uploadsCount = 0;
+    try { uploadsCount = fs.readdirSync(uploadsPath).length; } catch (e) { /* dossier absent */ }
     res.json({
         success: true,
         service: "bib-juridique",
         status: "UP",
-        uploadsPath: uploadsPath,
-        files: fs.readdirSync(uploadsPath)
+        uploads: uploadsCount
     });
 });
 

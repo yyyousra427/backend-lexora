@@ -39,9 +39,11 @@ The generated `SECRET_KEY` must be **byte-identical** in these five places, or t
 
 Quoting rule: if the secret contains `$`, `#` or spaces, wrap it in **single quotes** in the env files (dotenv and PowerShell both mangle unquoted specials).
 
-## 3. Django services — settings changes (one-time code edit)
+## 3. Django services — settings changes
 
-All three Django services hardcode secrets in `settings.py`. Replace the hardcoded blocks with `python-decouple` reads (already a dependency). Apply this pattern in **`authentification/authentification/settings.py`**, **`affectation-service/affectation_service/settings.py`**, and **`service_clm/service_clm/settings.py`**:
+> ✅ **Already applied in the repository** (Aug 2026): all three `settings.py` files read configuration through `python-decouple` exactly as shown below, WhiteNoise middleware and `STATIC_ROOT` included. There is nothing to edit in code — this section documents the pattern, and your only job is filling the env files in §4.
+
+The pattern in **`authentification/authentification/settings.py`**, **`affectation-service/affectation_service/settings.py`**, and **`service_clm/service_clm/settings.py`**:
 
 ```python
 from decouple import config
@@ -204,16 +206,17 @@ The dev configs pin CORS to `http://localhost:3000`. Add/replace with your real 
 
 ## 6. Stop committing env files
 
+> ✅ **Already applied**: `.gitignore` covers `.env`/`config.env`, and every service ships a committed `*.env.example` / `config.env.example` template.
+
+One manual step remains the first time you commit after these changes — the env files are still *tracked* from before, and `.gitignore` alone does not untrack them:
+
 ```bash
-cat >> .gitignore <<'EOF'
-# environment files — real secrets live only on the server
-.env
-config.env
-**/staticfiles/
-EOF
+git rm --cached authentification/.env affectation-service/.env service_clm/.env \
+  service-juridique/config.env bib-juridique/config.env service-notification/.env
+git commit -m "stop tracking env files"
 ```
 
-Keep a `*.env.example` copy of each file (with placeholder values) in the repo so the shape stays documented.
+⚠ Teammates who pull that commit will have their local `.env` files deleted by git — they should copy them aside first, or recreate them from the `*.env.example` templates.
 
 ## Done when
 

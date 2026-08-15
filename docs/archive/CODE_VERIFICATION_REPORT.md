@@ -1,5 +1,7 @@
 # Code Verification and Performance Report
 
+> **⚠ ARCHIVED — SUPERSEDED (August 2026).** This report describes the repository as it was at commit `29834ff`, before the hardening pass. Several findings below are no longer accurate: Django settings are now env-driven (`DEBUG` defaults to False), `service_clm/requirements.txt` was replaced with a curated list, and `/bib` routes are JWT-protected. For the current state see [`../TECHNICAL_REPORT.md`](../TECHNICAL_REPORT.md); for deployment see [`../deployment/`](../deployment/README.md). Kept for historical reference only.
+
 ## 1. Scope
 This report reviews the backend microservice project in the workspace, covering the main Python Django services, the Node.js microservices, and the Java Spring Boot gateway/registry modules.
 

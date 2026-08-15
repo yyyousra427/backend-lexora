@@ -9,7 +9,7 @@ router.get('/:id', authMiddleware, ctrl.getOne);
 
 // Routes réservées aux admins
 router.post('/', authMiddleware, checkRole('admin'), ctrl.create);
-router.put('/:id', authMiddleware, checkRole('admin'), ctrl.create);
+router.put('/:id', authMiddleware, checkRole('admin'), ctrl.update);
 router.delete('/:id', authMiddleware, checkRole('admin'), ctrl.remove);
 
 module.exports = router;

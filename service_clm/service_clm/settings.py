@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +21,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-8=(we)be4t_os3nfz1z(wsk^jntnhd5t$mya!=dfcv*!xx2p0$'
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
 
 
 # Application definition
@@ -72,6 +73,7 @@ SIMPLE_JWT = {
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -139,15 +141,14 @@ WSGI_APPLICATION = 'service_clm.wsgi.application'
 #         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
-# database de khalida
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'clm_sounatrach',
-        'USER': 'root',  # Ou un autre utilisateur
-        'PASSWORD': 'rootpassword',
-        'HOST': 'localhost',
-        'PORT': '3306',  # Port par défaut de MySQL
+        'NAME': config('DB_NAME', default='clm_sounatrach'),
+        'USER': config('DB_USER', default='root'),
+        'PASSWORD': config('DB_PASSWORD'),
+        'HOST': config('DB_HOST', default='localhost'),
+        'PORT': config('DB_PORT', default='3306'),
     }
 }
 
@@ -208,15 +209,19 @@ USE_TZ = True
 
 
 STATIC_URL = 'static/'
-import cloudinary
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
 import cloudinary
 
 cloudinary.config(
-    cloud_name="dibj7he8y",
-    api_key="227388483553784",
-    api_secret="OEwKOYY3zYdpIn5Hnd0UPjluRJ4"
+    cloud_name=config('CLOUDINARY_CLOUD_NAME', default=''),
+    api_key=config('CLOUDINARY_API_KEY', default=''),
+    api_secret=config('CLOUDINARY_API_SECRET', default=''),
 )
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+# Chemin explicite du binaire Tesseract si absent du PATH (lu par clm/ocr_utils.py)
+TESSERACT_CMD = config('TESSERACT_CMD', default=None)
 
 # MEDIA_URL = '/media/
 # URL du service Notification (via Spring Cloud Gateway)

@@ -3,9 +3,9 @@
 | | |
 |---|---|
 | **Date** | 15 August 2026 |
-| **Repository state** | branch `master`, commit `29834ff` |
+| **Repository state** | branch `master`, commit `29834ff` + Aug 2026 hardening fixes (uncommitted at time of writing) |
 | **Scope** | All 8 services, configuration, data layer, integrations, tooling |
-| **Companion documents** | [`../CLAUDE.md`](../CLAUDE.md) (working guide) · [`../CODE_VERIFICATION_REPORT.md`](../CODE_VERIFICATION_REPORT.md) (build verification) · [`deployment/`](deployment/README.md) (VPS deployment guide) |
+| **Companion documents** | [`../CLAUDE.md`](../CLAUDE.md) (working guide) · [`deployment/`](deployment/README.md) (VPS deployment guide) · [`features/`](features/README.md) (per-feature docs) · [`archive/CODE_VERIFICATION_REPORT.md`](archive/CODE_VERIFICATION_REPORT.md) (archived build verification) |
 
 ---
 
@@ -114,12 +114,12 @@ Design facts:
 - **Pipeline modules** (`clm/`): `contract_parser.py` (structure extraction) → `ocr_utils.py` (text layer: native PyMuPDF text first, Tesseract OCR fallback for scanned pages, honoring an optional `TESSERACT_CMD` setting) → `risk_engine.py` (rule-based risk scoring) → `notification_client.py` (pushes alerts through the gateway to `service-notification`; URL and 5 s timeout from settings) → `resolvers.py` (cross-service data resolution).
 - **Media**: `DEFAULT_FILE_STORAGE = MediaCloudinaryStorage` (contract files to Cloudinary).
 - Cache: Django `LocMemCache` (60 s TTL) backing discovery lookups.
-- ⚠ `requirements.txt` is a UTF-16 machine freeze (~190 packages, incl. TensorFlow/Jupyter) — not installable as-is; the curated replacement list lives in [deployment/06-django-services.md](deployment/06-django-services.md).
+- `requirements.txt` was a UTF-16 machine freeze (~190 packages) — **replaced Aug 2026** with a curated UTF-8 list (incl. whitenoise + gunicorn).
 
 ### 4.6 service-juridique — organizational structure (Node, port 8084)
 
 - Express **4.18**, Mongoose **7.6**, morgan logging, express-validator. **Mongo DB**: `juridique_dbb`.
-- **8 Mongoose models**: `Direction`, `Departement`, `Activite`, `DirectionCentrale`, `DirectionActivite`, `DepartementActivite`, `Division`, `Structure` — the org hierarchy including an organigramme endpoint (`/juridique/directions/organigramme`).
+- **8 Mongoose models**: `Direction`, `Departement`, `Activite`, `DirectionCentrale`, `DirectionActivite`, `DepartementActivite`, `Division`, `Structure` — the org hierarchy including an organigramme endpoint (`/juridique/directions-centrales/:id/organigramme`; the `directions/organigramme` route advertised by the startup banner is commented out).
 - Routes under `/juridique/*` (directions, departements, activites, directions-centrales, structure, division, direction_activite, departemet_activite *(sic — typo is part of the API surface)*). Write operations are admin-gated.
 - **Auth middleware** (`middleware/auth.js`): verifies the JWT locally against `JWT_SECRET`, then resolves the full user via gateway `GET /auth/all_users/<id>/` with a 10-minute in-memory `Map` cache; role checks use the Django role strings.
 - `seed.js` is fully commented out (dead code); `/health` and `/info` at root.
@@ -128,7 +128,7 @@ Design facts:
 
 - Express **5.2**, Mongoose **9.7**, **multer 2.1** for uploads. **Mongo DB**: `bib_juridique_db`.
 - Single model `DocumentJuridique`; API under `/bib/*`; uploaded files written to **local disk** at `src/uploads/` and served statically at `/uploads` (both paths exposed through the gateway).
-- `/health` returns service status **plus a listing of every stored filename** (information-disclosure concern).
+- `/health` returns service status plus an uploads file count (the filename listing was removed Aug 2026). API routes now require JWT; delete is admin-only.
 - `fix-document-urls.js`: one-off maintenance script rewriting stored document URLs.
 
 ### 4.8 service-notification — notifications & messaging (Node, port 8004)
@@ -190,20 +190,20 @@ Failure signature of secret drift: 401s on Node routes only, Django routes fine.
 
 | Service | File | Notable keys |
 |---|---|---|
-| authentification | `.env` | `EUREKA_SERVER/APP_NAME/HOST/PORT` (8010) |
-| affectation-service | `.env` | same pattern (8011) |
-| service_clm | `.env` | same pattern (8012) |
+| authentification | `.env` | Eureka (8010) + `SECRET_KEY`, `DEBUG`, `ALLOWED_HOSTS`, `DB_*`, email, Cloudinary |
+| affectation-service | `.env` | Eureka (8011) + `SECRET_KEY`, `DEBUG`, `ALLOWED_HOSTS`, `DB_*` |
+| service_clm | `.env` | Eureka (8012) + `SECRET_KEY`, `DEBUG`, `ALLOWED_HOSTS`, `DB_*`, Cloudinary, `TESSERACT_CMD` |
 | service-juridique | `config.env` | `PORT`, `MONGODB_URI`, Eureka, `GATEWAY_URL`, `JWT_SECRET` |
 | bib-juridique | `config.env` | same pattern (8085) |
 | service-notification | `.env` | same pattern (8004) + `EUREKA_SERVICE_NAME` |
 | gateway / registry | `application.yml` | ports, routes, CORS, Eureka |
 
-Hardcoded in code (dev state, to externalize per the deployment guide): Django `SECRET_KEY`s, MySQL credentials (`root`/`rootpassword`), Gmail SMTP app password, Cloudinary credentials, CORS origin lists. Production env-file layouts: [deployment/04-configuration.md](deployment/04-configuration.md).
+Since Aug 2026 the Django services read `SECRET_KEY`, `DEBUG`, `ALLOWED_HOSTS`, DB credentials, email, and Cloudinary from their `.env` via `python-decouple` (committed `*.env.example` templates document the shape). Still hardcoded: CORS origin lists and gateway route targets. Production env-file layouts: [deployment/04-configuration.md](deployment/04-configuration.md).
 
 ## 8. Build, tooling & quality
 
 - **Java**: Maven wrapper per module; `spring-boot-maven-plugin`; requires JDK 21 (`<java.version>21</java.version>`).
-- **Python**: plain `requirements.txt` per service (no lockfiles); authentification/affectation lists are curated; service_clm's is broken (§4.5).
+- **Python**: plain `requirements.txt` per service (no lockfiles); all three lists are curated since the Aug 2026 replacement of service_clm's freeze dump (§4.5).
 - **Node**: npm; `package-lock.json` present in service-juridique and service-notification; bib-juridique has **`node_modules` committed** to git (~13k files).
 - **Docker**: gateway/registry Dockerfiles are active but expect a pre-built jar (`FROM openjdk:21`); authentification's Dockerfile and `entrypoint.sh` are commented-out/dev-grade (port 8000 mismatch); no Dockerfiles for the other four services; **no docker-compose**.
 - **Tests**: none in practice — Django stub `tests.py` files, placeholder npm `test` scripts, Spring context-load tests only. No CI configuration in the repository.
@@ -216,19 +216,19 @@ Full remediation detail lives in the deployment guide and the deployment report;
 | ID | Severity | Issue |
 |---|---|---|
 | G-1 | Critical | Live secrets committed to git history (SECRET_KEY/JWT, Gmail app password, Cloudinary secret, DB passwords) — rotate, externalize |
-| G-2 | Critical | `DEBUG=True`, `ALLOWED_HOSTS=[]` in all Django services |
+| G-2 | ~~Critical~~ Fixed in code | `DEBUG`/`ALLOWED_HOSTS` now env-driven (default `DEBUG=False`); dev `.env` sets `DEBUG=True` |
 | G-3 | Critical | Java build requires JDK 21; older toolchains fail (`release version 21 not supported`) |
-| G-4 | Critical | `service_clm/requirements.txt` UTF-16 machine freeze — not installable |
+| G-4 | ~~Critical~~ Fixed | `service_clm/requirements.txt` replaced with a curated UTF-8 list (Aug 2026) |
 | G-5 | High | Dev servers only (`runserver`, nodemon); no WSGI/process manager in repo |
 | G-6 | High | CORS + service URLs hardcoded to localhost; Django routed by fixed ports |
 | G-7 | High | `/notifications/risk-alerts` unauthenticated |
-| G-8 | High | bib-juridique uploads on local disk; `/health` lists stored filenames |
+| G-8 | High (partly fixed) | bib-juridique uploads on local disk (remains); `/health` filename listing removed and `/bib` routes now JWT-protected (Aug 2026) |
 | G-9 | High | No automated tests / CI |
 | G-10 | Medium | JWT access-token lifetime 1 day (comment claims 1 hour) |
 | G-11 | Medium | In-memory caches only (locmem / Map) — single-instance assumption |
 | G-12 | Medium | Eureka self-preservation disabled |
-| G-13 | Medium | Repo hygiene: junk root files (`Author`, `code`, `fatal`, `git`, `Omit`, `Run`, `to`), committed `node_modules`, `service_clm/db.sqlite3`, sample xlsx |
-| — | Note | Socket.IO handler present but never attached (§4.8); `departemet_activite` route typo is live API surface |
+| G-13 | Medium (partly fixed) | Junk root files deleted and `.gitignore` extended (Aug 2026); still committed: `node_modules` (bib-juridique), `service_clm/db.sqlite3`, sample xlsx |
+| — | Note | Socket.IO handler present but never attached (§4.8); `departemet_activite` route typo is live API surface; `PUT /juridique/activites/:id` create-instead-of-update bug fixed Aug 2026 |
 
 ## 10. Port & identity reference
 

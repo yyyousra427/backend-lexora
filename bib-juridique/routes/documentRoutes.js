@@ -2,6 +2,7 @@ const express = require("express");
 
 const router = express.Router();
 const upload = require("../middleware/upload");
+const { authMiddleware, checkRole } = require("../middleware/auth");
 
 const {
     createDocument,
@@ -16,12 +17,9 @@ const {
 // CREATE DOCUMENT
 // POST /bib/documents
 // ==========================
-// router.post(
-//     "/documents",
-//     createDocument
-// );
 router.post(
     "/documents",
+    authMiddleware,
     upload.single("pdf"),
     createDocument
 );
@@ -32,6 +30,7 @@ router.post(
 // ==========================
 router.get(
     "/documents",
+    authMiddleware,
     getAllDocuments
 );
 
@@ -41,6 +40,7 @@ router.get(
 // ==========================
 router.get(
     "/search",
+    authMiddleware,
     searchDocuments
 );
 
@@ -50,6 +50,7 @@ router.get(
 // ==========================
 router.get(
     "/documents/:id",
+    authMiddleware,
     getDocumentById
 );
 
@@ -57,22 +58,21 @@ router.get(
 // UPDATE DOCUMENT
 // PUT /bib/documents/:id
 // ==========================
-// router.put(
-//     "/documents/:id",
-//     updateDocument
-// );
 router.put(
     "/documents/:id",
+    authMiddleware,
     upload.single("pdf"),
     updateDocument
 );
 
 // ==========================
-// DELETE DOCUMENT
+// DELETE DOCUMENT (admin uniquement)
 // DELETE /bib/documents/:id
 // ==========================
 router.delete(
     "/documents/:id",
+    authMiddleware,
+    checkRole("admin"),
     deleteDocument
 );
 
