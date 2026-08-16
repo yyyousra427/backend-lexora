@@ -77,7 +77,7 @@ systemctl status lexora-registry lexora-gateway
 Port 8761 is firewalled from the internet (correct). View the Eureka dashboard through an SSH tunnel from your own machine:
 
 ```bash
-ssh -L 8761:localhost:8761 lexora@<VPS-IP>
+ssh -L 8761:localhost:8761 lexora@54.36.206.131
 # then open http://localhost:8761 in your local browser
 ```
 

@@ -69,7 +69,7 @@ Only three ports are open to the internet. Everything else stays loopback-only.
 | 8084, 8085, 8004 | **localhost only** | Node services |
 | 3306, 27017 | **localhost only** | MySQL, MongoDB |
 
-A DNS **A record** for your API hostname (e.g. `api.example.com`) must point at the VPS IP before the TLS step.
+The DNS **A record** is already in place: `lexora.duckdns.org` → `54.36.206.131` (managed in the DuckDNS dashboard; verified resolving 16 Aug 2026).
 
 ## External accounts needed
 

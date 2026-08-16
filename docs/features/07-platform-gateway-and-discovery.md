@@ -9,7 +9,7 @@ Not a business feature, but the platform every feature rides on. Documented here
 
 ## 1. Single entry point
 
-The React frontend (:3000) talks **only** to the gateway (:8083). Behind nginx in production, the public origin is `https://api.<domain>` → gateway. Services are never exposed directly (loopback binding + firewall).
+The React frontend (:3000) talks **only** to the gateway (:8083). Behind nginx in production, the public origin is `https://lexora.duckdns.org` (VPS `54.36.206.131`) → gateway. Services are never exposed directly (loopback binding + firewall).
 
 ## 2. Routing table
 

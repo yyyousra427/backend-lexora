@@ -98,7 +98,7 @@ EUREKA_PORT=8010
 
 SECRET_KEY='<GENERATED-SECRET>'
 DEBUG=False
-ALLOWED_HOSTS=api.example.com,localhost,127.0.0.1
+ALLOWED_HOSTS=lexora.duckdns.org,localhost,127.0.0.1
 
 DB_NAME=loisonatrach
 DB_PASSWORD=<STRONG-MYSQL-PASSWORD>
@@ -121,7 +121,7 @@ EUREKA_PORT=8011
 
 SECRET_KEY='<GENERATED-SECRET>'
 DEBUG=False
-ALLOWED_HOSTS=api.example.com,localhost,127.0.0.1
+ALLOWED_HOSTS=lexora.duckdns.org,localhost,127.0.0.1
 
 DB_NAME=affectation-sonatrach
 DB_PASSWORD=<STRONG-MYSQL-PASSWORD>
@@ -137,7 +137,7 @@ EUREKA_PORT=8012
 
 SECRET_KEY='<GENERATED-SECRET>'
 DEBUG=False
-ALLOWED_HOSTS=api.example.com,localhost,127.0.0.1
+ALLOWED_HOSTS=lexora.duckdns.org,localhost,127.0.0.1
 
 DB_NAME=clm_sounatrach
 DB_PASSWORD=<STRONG-MYSQL-PASSWORD>
@@ -192,7 +192,7 @@ JWT_SECRET='<GENERATED-SECRET>'
 
 ## 5. CORS — point everything at the real frontend origin
 
-The dev configs pin CORS to `http://localhost:3000`. Add/replace with your real frontend origin (e.g. `https://app.example.com`) in **all** of:
+The dev configs pin CORS to `http://localhost:3000`. Add/replace with your real **frontend** origin in **all** of the lists below. Note the distinction: `lexora.duckdns.org` is the *backend's* domain and belongs in `ALLOWED_HOSTS` above — CORS lists must contain the origin the *frontend* is served from (wherever the React app ends up hosted; if it ends up served from `https://lexora.duckdns.org` itself, same-origin requests need no CORS entry at all):
 
 | File | What to change |
 |---|---|

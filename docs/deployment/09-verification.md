@@ -14,7 +14,7 @@ All must report `active` / `online`.
 
 ## 2. Eureka registrations
 
-Through an SSH tunnel (`ssh -L 8761:localhost:8761 lexora@<VPS-IP>`), open `http://localhost:8761` and confirm **seven** clients UP:
+Through an SSH tunnel (`ssh -L 8761:localhost:8761 lexora@54.36.206.131`), open `http://localhost:8761` and confirm **seven** clients UP:
 
 `GATEWAY-SERVICE`, `AUTHENTICATION-SOUNATRACH`, `AFFECTATION-SOUNATRACH`, `CLM-SOUNATRACH`, `SERVICE-JURIDIQUE`, `BIB-JURIDIQUE`, `SERVICE-NOTIFICATION`
 
@@ -36,7 +36,7 @@ Health routes live at each service's root and are **not** routed by the gateway 
 From your own machine:
 
 ```bash
-BASE=https://api.example.com
+BASE=https://lexora.duckdns.org
 
 # gateway → Django (hardcoded-port route)
 curl -s -o /dev/null -w '%{http_code}\n' $BASE/auth/

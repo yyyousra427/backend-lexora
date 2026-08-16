@@ -2,7 +2,7 @@
 
 nginx is the only thing the internet talks to. It terminates TLS and forwards everything to the gateway on `127.0.0.1:8083`.
 
-Prerequisite: the DNS A record for your API hostname (e.g. `api.example.com`) already points at the VPS IP.
+Prerequisite: the DNS A record already points at the VPS — `lexora.duckdns.org` → `54.36.206.131` (verified 16 Aug 2026; managed in the DuckDNS dashboard). Let's Encrypt works fine with DuckDNS subdomains via the standard HTTP challenge certbot uses below — no special DNS plugin needed.
 
 ## 1. Server block
 
@@ -13,7 +13,7 @@ sudo nano /etc/nginx/sites-available/lexora
 ```nginx
 server {
     listen 80;
-    server_name api.example.com;
+    server_name lexora.duckdns.org;
 
     # multer document uploads go through here — the nginx default of 1m
     # would reject any real PDF with "413 Request Entity Too Large"
@@ -46,12 +46,12 @@ sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
-At this point `http://api.example.com/juridique/directions` should answer from the internet.
+At this point `http://lexora.duckdns.org/juridique/directions` should answer from the internet.
 
 ## 2. TLS with Let's Encrypt
 
 ```bash
-sudo certbot --nginx -d api.example.com
+sudo certbot --nginx -d lexora.duckdns.org
 ```
 
 Certbot rewrites the server block for 443 and adds the HTTP→HTTPS redirect. Confirm auto-renewal is armed:
@@ -63,7 +63,7 @@ sudo certbot renew --dry-run
 
 ## 3. Point the frontend and CORS at the new origin
 
-- The React frontend's API base URL becomes `https://api.example.com`.
+- The React frontend's API base URL becomes `https://lexora.duckdns.org`.
 - The CORS origin lists from [04-configuration.md](04-configuration.md#5-cors--point-everything-at-the-real-frontend-origin) must contain the frontend's **https** origin — revisit them now if you deployed the frontend after step 3.
 - After editing the gateway's `application.yml` CORS list, rebuild and restart it:
 
@@ -74,7 +74,7 @@ sudo systemctl restart lexora-gateway
 
 ## Done when
 
-- `https://api.example.com/juridique/directions` answers with valid TLS
+- `https://lexora.duckdns.org/juridique/directions` answers with valid TLS
 - `http://` redirects to `https://`
 - A browser call from the frontend origin passes CORS (no preflight failure in the console)
 - `sudo certbot renew --dry-run` succeeds

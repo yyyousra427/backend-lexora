@@ -17,6 +17,16 @@ Step-by-step guide for deploying the full Lexora microservices backend on a sing
 | 8 | [09-verification.md](09-verification.md) | Smoke tests — prove every route and the auth contract |
 | — | [10-troubleshooting.md](10-troubleshooting.md) | Symptom → cause → fix for the known failure modes |
 
+## Target environment
+
+| | |
+|---|---|
+| **VPS IP** | `54.36.206.131` |
+| **Backend domain** | `lexora.duckdns.org` (DuckDNS; A record → 54.36.206.131, verified 16 Aug 2026) |
+| **Public base URL** | `https://lexora.duckdns.org` after step 7 (TLS) |
+
+If the VPS IP ever changes, update it in the [DuckDNS dashboard](https://www.duckdns.org) for the `lexora` subdomain — nothing else in the stack hardcodes the IP.
+
 ## What you are deploying
 
 Eight services behind a Spring Cloud Gateway, discovered via Eureka. The React frontend is the only intended client and talks exclusively to the gateway.
