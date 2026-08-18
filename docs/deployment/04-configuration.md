@@ -2,7 +2,9 @@
 
 Clone the code, generate fresh secrets, and make every service read its configuration from environment files instead of hardcoded values. This is the longest step; everything after it is mechanical.
 
-## 1. Clone
+Run everything below as the **`lexora`** user (`su - lexora` if you're still on `root`), unless a line starts with `sudo`.
+
+## Step 1 — Clone the repo
 
 ```bash
 sudo mkdir -p /opt/lexora
@@ -11,84 +13,36 @@ git clone <YOUR-REPO-URL> /opt/lexora
 cd /opt/lexora
 ```
 
-## 2. Generate fresh secrets
+## Step 2 — Generate the shared secret
 
-The committed dev secrets (Django `SECRET_KEY`, Gmail app password, Cloudinary secret, DB passwords) are in git history — **treat them as leaked, never reuse them**.
+This single value becomes the Django `SECRET_KEY` **and** the cross-service JWT secret — you'll paste the exact same string into 5 files in Step 4.
 
 ```bash
-# New Django SECRET_KEY — this is also the cross-service JWT secret
 python3 -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
 ```
 
-Also create now, at the providers:
+Copy the printed value somewhere safe for the next step (a scratch file, your password manager — just not committed anywhere).
 
-- a **new Gmail app password** (Google account → Security → 2FA → App passwords), and revoke the old one
-- a **new Cloudinary API secret** (Cloudinary console → regenerate), and note cloud name + API key
+⚠ Quoting rule: if the generated secret contains `$`, `#`, or spaces, wrap it in **single quotes** when you paste it into the env files below.
 
-## The shared JWT secret
+## Step 3 — Gmail + Cloudinary credentials
 
-The generated `SECRET_KEY` must be **byte-identical** in these five places, or token verification fails only in the services that drifted:
+The committed dev secrets (Gmail app password, Cloudinary API secret) are in git history — treat them as leaked.
 
-| # | File | Variable |
-|---|---|---|
-| 1 | `authentification/.env` | `SECRET_KEY` |
-| 2 | `service-juridique/config.env` | `JWT_SECRET` |
-| 3 | `bib-juridique/config.env` | `JWT_SECRET` |
-| 4 | `service-notification/.env` | `JWT_SECRET` |
-| 5 | any future service verifying tokens | `JWT_SECRET` |
+- **Recommended:** create a **new Gmail app password** (Google account → Security → 2FA → App passwords) and revoke the old one; create a **new Cloudinary API secret** (Cloudinary console → regenerate), noting the cloud name + API key.
+- **Faster path:** reuse the existing dev values from your local `authentification/.env` / `service_clm/.env` (not `.env.example`, which only has placeholders) — acceptable to get running sooner, but rotate before this repo/history is ever shared or made public.
 
-Quoting rule: if the secret contains `$`, `#` or spaces, wrap it in **single quotes** in the env files (dotenv and PowerShell both mangle unquoted specials).
+Either way, have these four values ready before Step 4: `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`.
 
-## 3. Django services — settings changes
+## Step 4 — Write the six env files
 
-> ✅ **Already applied in the repository** (Aug 2026): all three `settings.py` files read configuration through `python-decouple` exactly as shown below, WhiteNoise middleware and `STATIC_ROOT` included. There is nothing to edit in code — this section documents the pattern, and your only job is filling the env files in §4.
+The shared secret from Step 2 goes into all five `SECRET_KEY`/`JWT_SECRET` fields below — **byte-identical**, or token verification breaks silently between services. `DB_PASSWORD` is the `lexora` MySQL password from [03-databases.md](03-databases.md); `MONGODB_URI` passwords are the MongoDB `admin` password from the same file.
 
-The pattern in **`authentification/authentification/settings.py`**, **`affectation-service/affectation_service/settings.py`**, and **`service_clm/service_clm/settings.py`**:
+**4.1 — `authentification/.env`**
 
-```python
-from decouple import config
-
-SECRET_KEY = config('SECRET_KEY')
-DEBUG = config('DEBUG', default=False, cast=bool)
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': config('DB_NAME'),
-        'USER': config('DB_USER', default='lexora'),
-        'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('DB_HOST', default='localhost'),
-        'PORT': config('DB_PORT', default='3306'),
-    }
-}
-
-# static files for admin under gunicorn (used in step 5)
-STATIC_URL = 'static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+```bash
+nano /opt/lexora/authentification/.env
 ```
-
-In `authentification` additionally:
-
-```python
-EMAIL_HOST_USER = config('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-```
-
-In `authentification` and `service_clm` (Cloudinary):
-
-```python
-cloudinary.config(
-    cloud_name=config('CLOUDINARY_CLOUD_NAME'),
-    api_key=config('CLOUDINARY_API_KEY'),
-    api_secret=config('CLOUDINARY_API_SECRET'),
-)
-```
-
-## 4. Env files — full production contents
-
-### `authentification/.env`
 
 ```ini
 EUREKA_SERVER=http://localhost:8761/eureka/
@@ -101,17 +55,24 @@ DEBUG=False
 ALLOWED_HOSTS=lexora.duckdns.org,localhost,127.0.0.1
 
 DB_NAME=loisonatrach
+DB_USER=lexora
 DB_PASSWORD=<STRONG-MYSQL-PASSWORD>
 
-EMAIL_HOST_USER=<system-gmail-address>
-EMAIL_HOST_PASSWORD=<new-gmail-app-password>
+EMAIL_HOST_USER=<gmail-address>
+EMAIL_HOST_PASSWORD=<gmail-app-password>
 
 CLOUDINARY_CLOUD_NAME=<cloud-name>
 CLOUDINARY_API_KEY=<api-key>
-CLOUDINARY_API_SECRET=<new-api-secret>
+CLOUDINARY_API_SECRET=<cloudinary-api-secret>
 ```
 
-### `affectation-service/.env`
+Save: `Ctrl+O`, Enter, `Ctrl+X`.
+
+**4.2 — `affectation-service/.env`**
+
+```bash
+nano /opt/lexora/affectation-service/.env
+```
 
 ```ini
 EUREKA_SERVER=http://localhost:8761/eureka/
@@ -124,10 +85,15 @@ DEBUG=False
 ALLOWED_HOSTS=lexora.duckdns.org,localhost,127.0.0.1
 
 DB_NAME=affectation-sonatrach
+DB_USER=lexora
 DB_PASSWORD=<STRONG-MYSQL-PASSWORD>
 ```
 
-### `service_clm/.env`
+**4.3 — `service_clm/.env`**
+
+```bash
+nano /opt/lexora/service_clm/.env
+```
 
 ```ini
 EUREKA_SERVER=http://localhost:8761/eureka/
@@ -140,16 +106,21 @@ DEBUG=False
 ALLOWED_HOSTS=lexora.duckdns.org,localhost,127.0.0.1
 
 DB_NAME=clm_sounatrach
+DB_USER=lexora
 DB_PASSWORD=<STRONG-MYSQL-PASSWORD>
 
 CLOUDINARY_CLOUD_NAME=<cloud-name>
 CLOUDINARY_API_KEY=<api-key>
-CLOUDINARY_API_SECRET=<new-api-secret>
+CLOUDINARY_API_SECRET=<cloudinary-api-secret>
 
 NOTIFICATION_SERVICE_URL=http://localhost:8083
 ```
 
-### `service-juridique/config.env`
+**4.4 — `service-juridique/config.env`**
+
+```bash
+nano /opt/lexora/service-juridique/config.env
+```
 
 ```ini
 PORT=8084
@@ -163,7 +134,11 @@ GATEWAY_URL=http://localhost:8083
 JWT_SECRET='<GENERATED-SECRET>'
 ```
 
-### `bib-juridique/config.env`
+**4.5 — `bib-juridique/config.env`**
+
+```bash
+nano /opt/lexora/bib-juridique/config.env
+```
 
 ```ini
 PORT=8085
@@ -175,7 +150,11 @@ GATEWAY_URL=http://localhost:8083
 JWT_SECRET='<GENERATED-SECRET>'
 ```
 
-### `service-notification/.env`
+**4.6 — `service-notification/.env`**
+
+```bash
+nano /opt/lexora/service-notification/.env
+```
 
 ```ini
 PORT=8004
@@ -190,40 +169,98 @@ GATEWAY_URL=http://localhost:8083
 JWT_SECRET='<GENERATED-SECRET>'
 ```
 
-## 5. CORS — point everything at the real frontend origin
-
-The dev configs pin CORS to `http://localhost:3000`. Add/replace with your real **frontend** origin in **all** of the lists below. Note the distinction: `lexora.duckdns.org` is the *backend's* domain and belongs in `ALLOWED_HOSTS` above — CORS lists must contain the origin the *frontend* is served from (wherever the React app ends up hosted; if it ends up served from `https://lexora.duckdns.org` itself, same-origin requests need no CORS entry at all):
-
-| File | What to change |
-|---|---|
-| `gateway/src/main/resources/application.yml` | `allowedOrigins` list under `globalcors` |
-| `authentification/.../settings.py` | `CORS_ALLOWED_ORIGINS` |
-| `affectation-service/.../settings.py` | `CORS_ALLOWED_ORIGINS` |
-| `service_clm/.../settings.py` | `CORS_ALLOWED_ORIGINS` |
-| `service-notification/app.js` | `cors({ origin: [...] })` array |
-
-(`service-juridique` and `bib-juridique` use open `cors()` — they are only reachable through the gateway, whose CORS applies.)
-
-## 6. Stop committing env files
-
-> ✅ **Already applied**: `.gitignore` covers `.env`/`config.env`, and every service ships a committed `*.env.example` / `config.env.example` template.
-
-One manual step remains the first time you commit after these changes — the env files are still *tracked* from before, and `.gitignore` alone does not untrack them:
+## Step 5 — Verify the shared secret matches everywhere
 
 ```bash
+grep -h -E "SECRET_KEY|JWT_SECRET" \
+  /opt/lexora/authentification/.env \
+  /opt/lexora/service-juridique/config.env \
+  /opt/lexora/bib-juridique/config.env \
+  /opt/lexora/service-notification/.env
+```
+
+All 4 lines printed must carry the identical value inside the quotes (the 5th place is `affectation-service`, which only needs it as `SECRET_KEY` for its own token signing — same check applies if it verifies tokens).
+
+## Step 6 — Django settings (nothing to do)
+
+✅ Already applied in the repo (Aug 2026): `authentification/authentification/settings.py`, `affectation-service/affectation_service/settings.py`, and `service_clm/service_clm/settings.py` all read `SECRET_KEY`, `DEBUG`, `ALLOWED_HOSTS`, and the `DATABASES` block through `python-decouple`, plus WhiteNoise/`STATIC_ROOT` for serving admin static files under gunicorn. This step is just confirmation — the env files from Step 4 are what actually configure them.
+
+## Step 7 — CORS: point at the real frontend origin
+
+The dev configs allow `http://localhost:3000` (plus a few other localhost ports). You need your **frontend's** production origin — not the backend domain (`lexora.duckdns.org` is the backend and belongs in `ALLOWED_HOSTS` above). If the frontend ends up served from `https://lexora.duckdns.org` itself, same-origin requests need no CORS entry at all and you can skip this step.
+
+Decide `<YOUR-FRONTEND-URL>` first (e.g. `https://app.example.com`), then edit all 5 spots:
+
+**7.1 — Gateway** (`gateway/src/main/resources/application.yml`)
+
+```bash
+nano /opt/lexora/gateway/src/main/resources/application.yml
+```
+
+Find:
+```yaml
+            allowedOrigins:
+              - "http://localhost:3000"
+              - "http://127.0.0.1:3000"
+```
+Add your production origin as a new line in that list (keep or drop the localhost lines depending on whether you still need local testing against this server).
+
+**7.2 / 7.3 / 7.4 — the three Django services**
+
+```bash
+nano /opt/lexora/authentification/authentification/settings.py
+nano /opt/lexora/affectation-service/affectation_service/settings.py
+nano /opt/lexora/service_clm/service_clm/settings.py
+```
+
+Each has an identical block near the end of the file:
+```python
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "http://localhost:8083",
+]
+```
+Add `"<YOUR-FRONTEND-URL>",` as a new entry in each of the three files.
+
+**7.5 — `service-notification`** (`service-notification/app.js`)
+
+```bash
+nano /opt/lexora/service-notification/app.js
+```
+
+Find:
+```javascript
+app.use(cors({
+    origin: ['http://localhost:3000', 'http://localhost:8083'],
+    credentials: true
+}));
+```
+Add `'<YOUR-FRONTEND-URL>'` to the `origin` array.
+
+(`service-juridique` and `bib-juridique` use an open `cors()` with no allow-list — they're only reachable through the gateway, whose CORS rules apply first. Nothing to edit there.)
+
+## Step 8 — Stop tracking env files in git
+
+✅ Already applied: `.gitignore` covers `.env`/`config.env`, and every service ships a committed `*.env.example` / `config.env.example` template. One manual step remains — these files are still *tracked* from before `.gitignore` was added:
+
+```bash
+cd /opt/lexora
 git rm --cached authentification/.env affectation-service/.env service_clm/.env \
   service-juridique/config.env bib-juridique/config.env service-notification/.env
 git commit -m "stop tracking env files"
 ```
 
-⚠ Teammates who pull that commit will have their local `.env` files deleted by git — they should copy them aside first, or recreate them from the `*.env.example` templates.
+⚠ Anyone who pulls this commit elsewhere will have their local `.env` files deleted by git — they should copy them aside first, or recreate from the `*.env.example` templates.
 
 ## Done when
 
-- Fresh `SECRET_KEY` generated; Gmail + Cloudinary credentials rotated at the provider
-- All six env files above exist on the server with real values, identical JWT secret in the five places
-- The three `settings.py` files read secrets/DB/hosts from env, `DEBUG=False`
-- CORS lists contain the production frontend origin
-- `git status` shows no env file staged
+- [ ] Fresh `SECRET_KEY` generated (Step 2); Gmail + Cloudinary credentials either rotated or knowingly reused (Step 3)
+- [ ] All six env files exist on the server with real values (Step 4), identical shared secret in the five JWT/SECRET_KEY spots (Step 5)
+- [ ] The three `settings.py` files read secrets/DB/hosts from env, `DEBUG=False` (Step 6 — already true)
+- [ ] CORS lists in all 5 places contain the production frontend origin (Step 7)
+- [ ] `git status` shows no env file staged (Step 8)
 
 Next: [05-registry-and-gateway.md](05-registry-and-gateway.md)

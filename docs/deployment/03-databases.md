@@ -67,7 +67,7 @@ mongosh
 use admin
 db.createUser({
   user: "admin",
-  pwd: "<STRONG-MONGO-PASSWORD>",
+  pwd: "Lexora@2026",
   roles: [ { role: "root", db: "admin" } ]
 })
 exit

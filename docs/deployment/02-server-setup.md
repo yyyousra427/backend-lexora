@@ -15,12 +15,16 @@ Log back in as `lexora` for the rest of the deployment.
 
 ## 2. Firewall
 
+Minimal VPS images (OVH included) often ship without ufw — install it first:
+
 ```bash
-sudo ufw allow OpenSSH
+sudo apt update
+sudo apt install -y ufw
+sudo ufw allow OpenSSH     # if "profile not found": sudo ufw allow 22/tcp
 sudo ufw allow 80/tcp
 sudo ufw allow 443/tcp
+sudo ufw status            # ⚠ confirm the SSH rule is listed BEFORE enabling
 sudo ufw enable
-sudo ufw status
 ```
 
 Nothing else gets opened — all service ports stay on loopback (see the port table in [01-vps-requirements.md](01-vps-requirements.md#network--firewall)).
