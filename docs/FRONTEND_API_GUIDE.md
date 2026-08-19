@@ -1,5 +1,7 @@
 # Frontend Guide — Connecting to the Production Backend
 
+> Once connected, build the screens against [FRONTEND_FEATURES.md](FRONTEND_FEATURES.md) — the per-role screen map with exact endpoint contracts for every feature.
+
 Audience: the frontend team. You were pointed at a locally-running backend; the backend now runs on a VPS behind nginx + HTTPS. **The only change you need is the base URL — every path, body, and header stays the same.**
 
 ## 1. Base URL
