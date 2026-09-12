@@ -49,7 +49,7 @@ Failure signatures: secret drift → 401 on Node routes only; blacklist/rotation
 
 ## 5. CORS
 
-Layered: the gateway applies global CORS (origins `localhost:3000`/`127.0.0.1:3000`, credentials, all methods) **and** each service sets its own headers; a `DedupeResponseHeader` default filter (`RETAIN_FIRST`) prevents the duplicate-header browser error. Changing the frontend origin therefore touches the gateway yml **and** the per-service lists — the full checklist is in [../deployment/04-configuration.md](../deployment/04-configuration.md#5-cors--point-everything-at-the-real-frontend-origin).
+Layered: the gateway applies global CORS (explicit origins `localhost:3000`/`127.0.0.1:3000`/`lexora-dz.netlify.app`, plus `allowedOriginPatterns` admitting any `http://localhost:<port>`/`http://127.0.0.1:<port>`; credentials, all methods) **and** each service sets its own headers; a `DedupeResponseHeader` default filter (`RETAIN_FIRST`) prevents the duplicate-header browser error. Changing the frontend origin therefore touches the gateway yml **and** the per-service lists — the full checklist is in [../deployment/04-configuration.md](../deployment/04-configuration.md#5-cors--point-everything-at-the-real-frontend-origin). Local frontends on any port need no change: the Django services mirror the gateway rule with `CORS_ALLOWED_ORIGIN_REGEXES`, service-notification with regexes in its `cors()` origin array.
 
 ## 6. Operational notes
 

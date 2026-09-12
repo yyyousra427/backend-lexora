@@ -12,7 +12,14 @@ const app = express();
 
 // Middleware
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:8083', 'https://lexora-dz.netlify.app'],
+    origin: [
+        'http://localhost:3000',
+        'http://localhost:8083',
+        'https://lexora-dz.netlify.app',
+        // Front local en dev : tout port localhost (Vite 5173, CRA 3000, Angular 4200...)
+        /^http:\/\/localhost:\d+$/,
+        /^http:\/\/127\.0\.0\.1:\d+$/,
+    ],
     credentials: true
 }));
 app.use(express.json());

@@ -187,7 +187,7 @@ All 4 lines printed must carry the identical value inside the quotes (the 5th pl
 
 ## Step 7 — CORS: point at the real frontend origin
 
-The dev configs allow `http://localhost:3000` (plus a few other localhost ports). You need your **frontend's** production origin — not the backend domain (`lexora.duckdns.org` is the backend and belongs in `ALLOWED_HOSTS` above). If the frontend ends up served from `https://lexora.duckdns.org` itself, same-origin requests need no CORS entry at all and you can skip this step.
+The configs already accept any `http://localhost:<port>` / `http://127.0.0.1:<port>` origin through pattern rules (gateway `allowedOriginPatterns`, Django `CORS_ALLOWED_ORIGIN_REGEXES`, regexes in the `cors()` origin array of service-notification), so developers can point a local frontend on any port at this server without edits. You need your **frontend's** production origin — not the backend domain (`lexora.duckdns.org` is the backend and belongs in `ALLOWED_HOSTS` above). If the frontend ends up served from `https://lexora.duckdns.org` itself, same-origin requests need no CORS entry at all and you can skip this step.
 
 Decide `<YOUR-FRONTEND-URL>` first (e.g. `https://app.example.com`), then edit all 5 spots:
 
@@ -202,8 +202,12 @@ Find:
             allowedOrigins:
               - "http://localhost:3000"
               - "http://127.0.0.1:3000"
+              - "https://lexora-dz.netlify.app"
+            allowedOriginPatterns:
+              - "http://localhost:[*]"
+              - "http://127.0.0.1:[*]"
 ```
-Add your production origin as a new line in that list (keep or drop the localhost lines depending on whether you still need local testing against this server).
+Add your production origin as a new line in `allowedOrigins`. The `allowedOriginPatterns` block is what lets developers reach this server from a local frontend on any port — keep it, or delete it to lock production down to the explicit list.
 
 **7.2 / 7.3 / 7.4 — the three Django services**
 
@@ -221,9 +225,14 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:8000",
     "http://127.0.0.1:8000",
     "http://localhost:8083",
+    "https://lexora-dz.netlify.app",
+]
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^http://localhost:\d+$",
+    r"^http://127\.0\.0\.1:\d+$",
 ]
 ```
-Add `"<YOUR-FRONTEND-URL>",` as a new entry in each of the three files.
+Add `"<YOUR-FRONTEND-URL>",` as a new entry in `CORS_ALLOWED_ORIGINS` in each of the three files. `CORS_ALLOWED_ORIGIN_REGEXES` is the any-localhost-port rule for local dev — same keep-or-delete choice as the gateway.
 
 **7.5 — `service-notification`** (`service-notification/app.js`)
 
@@ -234,11 +243,17 @@ nano /opt/lexora/service-notification/app.js
 Find:
 ```javascript
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:8083'],
+    origin: [
+        'http://localhost:3000',
+        'http://localhost:8083',
+        'https://lexora-dz.netlify.app',
+        /^http:\/\/localhost:\d+$/,
+        /^http:\/\/127\.0\.0\.1:\d+$/,
+    ],
     credentials: true
 }));
 ```
-Add `'<YOUR-FRONTEND-URL>'` to the `origin` array.
+Add `'<YOUR-FRONTEND-URL>'` to the `origin` array (the two regexes are the any-localhost-port rule).
 
 (`service-juridique` and `bib-juridique` use an open `cors()` with no allow-list — they're only reachable through the gateway, whose CORS rules apply first. Nothing to edit there.)
 

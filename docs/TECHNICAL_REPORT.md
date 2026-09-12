@@ -76,7 +76,7 @@ flowchart LR
 Design facts:
 
 - **All routes use `StripPrefix=0`** — each service mounts its endpoints under its own public prefix. A new endpoint must carry the prefix; a new prefix needs a gateway route.
-- Global CORS allows `http://localhost:3000` / `127.0.0.1:3000` with credentials; a `DedupeResponseHeader` default filter prevents duplicated CORS headers (services also set their own).
+- Global CORS allows the explicit origins `http://localhost:3000` / `127.0.0.1:3000` / `https://lexora-dz.netlify.app` plus any `http://localhost:<port>` / `http://127.0.0.1:<port>` (`allowedOriginPatterns`, for local frontends on Vite/CRA/Angular ports) with credentials; a `DedupeResponseHeader` default filter prevents duplicated CORS headers (services also set their own).
 - Django services register with Eureka but are still routed by fixed port — registration is informational for them; Node services are genuinely load-balanced by discovery.
 - The registry (port **8761**) runs with `enable-self-preservation: false` (dev-oriented: fast eviction, mass-eviction risk in production).
 

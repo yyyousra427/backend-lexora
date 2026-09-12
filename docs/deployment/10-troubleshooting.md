@@ -41,6 +41,7 @@ Symptom → cause → fix, for the failure modes this specific stack actually pr
 | Symptom | Cause | Fix |
 |---|---|---|
 | Browser CORS/preflight errors | Frontend origin missing from one of the five CORS lists | Update all lists in [04-configuration.md](04-configuration.md#5-cors--point-everything-at-the-real-frontend-origin); the gateway needs a rebuild + restart after its yml changes |
+| CORS error only from a developer's machine (preflight answers `403`) | The tab is not on `http://localhost:<port>` / `http://127.0.0.1:<port>` (e.g. `https://localhost`, a LAN IP like `192.168.x.x`), or the API base is `http://` and the 301 to HTTPS fails the preflight | Any localhost port is accepted by the pattern rules; open the app on `http://localhost:<port>` and use `https://lexora.duckdns.org` as API base. `curl -si -X OPTIONS https://lexora.duckdns.org/auth/login/ -H 'Origin: http://localhost:5173' -H 'Access-Control-Request-Method: POST'` must answer `200` with `Access-Control-Allow-Origin` |
 | `413 Request Entity Too Large` on document upload | nginx default 1 MB body limit | `client_max_body_size 50m;` in the server block, `sudo systemctl reload nginx` |
 | Upload/OCR request dies at ~30–60 s | gunicorn or nginx timeout | CLM unit uses `--timeout 300`; nginx `proxy_read_timeout 300s` |
 | Django admin loads without CSS | `DEBUG=False` and static files not served | WhiteNoise middleware + `STATIC_ROOT` + `collectstatic` ([06-django-services.md](06-django-services.md)) |

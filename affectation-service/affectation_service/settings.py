@@ -82,6 +82,11 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:8083",
     "https://lexora-dz.netlify.app",
 ]
+# Front local en dev : tout port localhost (Vite 5173, CRA 3000, Angular 4200...)
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^http://localhost:\d+$",
+    r"^http://127\.0\.0\.1:\d+$",
+]
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = [
     'DELETE',

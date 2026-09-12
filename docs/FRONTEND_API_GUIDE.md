@@ -40,9 +40,11 @@ Note: the site is HTTPS. If your frontend is also served over HTTPS (it should b
 
 ## 2. ⚠ CORS — we need your origin
 
-The backend only accepts browser requests from allow-listed origins (`allowCredentials` is on, so no wildcards). Currently only `localhost:3000` dev origins are listed.
+> Running the app on your machine against this backend? The short version, with test accounts and a terminal check, is [FRONTEND_LOCAL_DEV_ACCESS.md](FRONTEND_LOCAL_DEV_ACCESS.md).
 
-**Send the backend team the exact production origin your app will be served from** (scheme + host, no trailing slash — e.g. `https://app.example.com`). Until it is added on the backend (5 config spots + service restarts), your deployed app's requests will fail with CORS errors even though the same calls work from curl/Postman. `localhost:3000` keeps working for your local dev against the production API in the meantime.
+The backend only accepts browser requests from allow-listed origins (`allowCredentials` is on, so no wildcards). Accepted today: the production app `https://lexora-dz.netlify.app`, plus **any** `http://localhost:<port>` / `http://127.0.0.1:<port>` for local development (Vite 5173, CRA/Next 3000, Angular 4200, ... no backend change needed when your dev port differs).
+
+**Send the backend team the exact production origin your app will be served from** (scheme + host, no trailing slash — e.g. `https://app.example.com`). Until it is added on the backend (5 config spots + service restarts), your deployed app's requests will fail with CORS errors even though the same calls work from curl/Postman. Your local dev server keeps working against the production API in the meantime, whatever its port. Two things still break local dev: the browser tab must be on `http://localhost:<port>` or `http://127.0.0.1:<port>` exactly (an `https://localhost` or LAN-IP origin like `http://192.168.x.x:5173` is rejected), and the API base must be `https://lexora.duckdns.org` (plain `http://` answers a 301 redirect, which browsers refuse on a preflight).
 
 ## 3. Authentication (unchanged, documented here for reference)
 
@@ -122,4 +124,13 @@ curl -s https://lexora.duckdns.org/juridique/directions \
   -H "Authorization: Bearer <access>"
 ```
 
-If both answer with JSON, the backend is reachable and your remaining integration work is purely the base-URL + CORS items above.
+```bash
+# CORS preflight exactly as your browser sends it (put your real dev port)
+curl -si -X OPTIONS https://lexora.duckdns.org/auth/login/ \
+  -H 'Origin: http://localhost:5173' \
+  -H 'Access-Control-Request-Method: POST' \
+  -H 'Access-Control-Request-Headers: content-type,authorization'
+# expect: HTTP 200 + "Access-Control-Allow-Origin: http://localhost:5173"
+```
+
+If all three answer as expected, the backend is reachable and your remaining integration work is purely the base-URL item above.
