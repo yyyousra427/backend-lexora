@@ -25,3 +25,6 @@ db.sqlite3
 
 # Java build output
 target/
+
+# PM2 process file, written on the server (docs/deployment/07-node-services.md)
+/ecosystem.config.js
