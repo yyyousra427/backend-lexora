@@ -6,12 +6,11 @@ Three Express services under PM2: **service-juridique** (8084), **bib-juridique*
 
 ```bash
 cd /opt/lexora/service-juridique && npm ci --omit=dev
-
-# bib-juridique has a stale node_modules committed to git — replace it with a clean install
-cd /opt/lexora/bib-juridique && rm -rf node_modules && npm ci --omit=dev
-
+cd /opt/lexora/bib-juridique && npm ci --omit=dev
 cd /opt/lexora/service-notification && npm ci --omit=dev
 ```
+
+(`node_modules/` is git-ignored and untracked since 19 Sept 2026; on a checkout older than that, `rm -rf node_modules` first — bib-juridique's committed copy was stale.)
 
 (`npm ci` uses the lockfile where present; if a service lacks `package-lock.json`, fall back to `npm install --omit=dev`.)
 

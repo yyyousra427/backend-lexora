@@ -16,6 +16,7 @@ Step-by-step guide for deploying the full Lexora microservices backend on a sing
 | 7 | [08-nginx-and-https.md](08-nginx-and-https.md) | Reverse proxy, TLS with certbot, upload sizes, WebSocket |
 | 8 | [09-verification.md](09-verification.md) | Smoke tests — prove every route and the auth contract |
 | — | [10-troubleshooting.md](10-troubleshooting.md) | Symptom → cause → fix for the known failure modes |
+| 9 | [11-updating.md](11-updating.md) | **Redeploying after a push** — the only step you repeat: env-file backup, reset to `origin/master`, rebuild what changed, restart, verify |
 
 ## Target environment
 

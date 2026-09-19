@@ -259,16 +259,11 @@ Add `'<YOUR-FRONTEND-URL>'` to the `origin` array (the two regexes are the any-l
 
 ## Step 8 — Stop tracking env files in git
 
-✅ Already applied: `.gitignore` covers `.env`/`config.env`, and every service ships a committed `*.env.example` / `config.env.example` template. One manual step remains — these files are still *tracked* from before `.gitignore` was added:
+✅ Already applied in the repository (19 Sept 2026): the six env files and the three `node_modules/` directories are no longer tracked — `.gitignore` covers `.env`/`config.env`/`node_modules/`, and every service ships a committed `*.env.example` / `config.env.example` template. Nothing to do on the server.
 
-```bash
-cd /opt/lexora
-git rm --cached authentification/.env affectation-service/.env service_clm/.env \
-  service-juridique/config.env bib-juridique/config.env service-notification/.env
-git commit -m "stop tracking env files"
-```
+Why it mattered: on 14 Sept 2026 a developer's local `config.env` (Mongo `root:root`) and a hardcoded `DATABASES` block (`root/root@localhost:3307`) were committed by accident; deployed as-is they would have taken `authentification` and `affectation-service` down. Production values live **only** in the env files on the VPS, and the update procedure ([11-updating.md](11-updating.md)) backs them up and restores them around every code update.
 
-⚠ Anyone who pulls this commit elsewhere will have their local `.env` files deleted by git — they should copy them aside first, or recreate from the `*.env.example` templates.
+⚠ For developers: the first `git pull` of that commit removes your local `.env`/`config.env`/`node_modules` from disk if they matched the committed copies. Recreate the env file from the `*.env.example` template (your own DB user/password/port go there — never in `settings.py`) and run `npm install`.
 
 ## Done when
 

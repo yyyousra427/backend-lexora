@@ -132,27 +132,20 @@ WSGI_APPLICATION = 'affectation_service.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-# database de khalida
+# Ne jamais remettre de valeurs en dur ici : chaque machine (poste dev ou VPS)
+# définit DB_NAME / DB_USER / DB_PASSWORD / DB_HOST / DB_PORT dans son propre
+# fichier .env (modèle : .env.example). Ex. MySQL local sur 3307 avec root/root
+# → DB_USER=root, DB_PASSWORD=root, DB_PORT=3307 dans .env, sans toucher ce fichier.
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'affectation_sounatrach',
-        'USER': 'root',  # Ou un autre utilisateur
-        'PASSWORD': 'root',
-        'HOST': 'localhost',
-        'PORT': '3307',  # Port par défaut de MySQL
+        'NAME': config('DB_NAME', default='affectation-sonatrach'),
+        'USER': config('DB_USER', default='root'),
+        'PASSWORD': config('DB_PASSWORD'),
+        'HOST': config('DB_HOST', default='localhost'),
+        'PORT': config('DB_PORT', default='3306'),
     }
 }
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': config('DB_NAME', default='affectation-sonatrach'),
-#         'USER': config('DB_USER', default='root'),
-#         'PASSWORD': config('DB_PASSWORD'),
-#         'HOST': config('DB_HOST', default='localhost'),
-#         'PORT': config('DB_PORT', default='3306'),
-#     }
-# }
 
 
 # Password validation

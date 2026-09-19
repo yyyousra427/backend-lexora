@@ -46,7 +46,24 @@ Extras beyond plain CRUD:
 |---|---|---|---|
 | GET | `/juridique/departements/direction/:directionId` | JWT | départements of one direction |
 | GET | `/juridique/directions-centrales/:id/organigramme` | JWT | org chart for a central direction |
+| GET | `/juridique/dashboard/counters` | JWT | KPI counts of all 8 entities (`Direction`/`Departement` count only `actif: true`) |
+| GET | `/juridique/dashboard/directions-par-direction-centrale` | JWT | active directions grouped per direction centrale, sorted by count desc |
+| GET | `/juridique/dashboard/activites-breakdown` | JWT | counts of the four activité sub-entities |
 | GET | `/health`, `/info` | none | liveness (root-mounted, not routed by gateway) |
+
+Dashboard aggregates (Sept 2026, `controllers/dashboardController.js`) — read-only, any authenticated role, envelope `{"success":true,"data":…}`:
+
+```json
+GET /juridique/dashboard/counters
+{"success":true,"data":{"directionsCentrales":3,"directions":9,"departements":21,"activites":4,
+  "directionsActivite":6,"departementsActivite":12,"divisions":5,"structures":8}}
+
+GET /juridique/dashboard/directions-par-direction-centrale
+{"success":true,"data":[{"directionCentraleId":"<id>","nom":"Direction Contrats","code":"DC","count":4}, …]}
+
+GET /juridique/dashboard/activites-breakdown
+{"success":true,"data":{"directionsActivite":6,"departementsActivite":12,"divisions":5,"structures":8}}
+```
 
 ## Authorization model
 

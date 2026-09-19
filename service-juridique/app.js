@@ -11,6 +11,7 @@ const structureRoute = require('./routes/structureRoutes');
 const divisionRoute= require('./routes/divisionRoutes');
 const direction_activiteRoutes = require('./routes/directionActiviteRoutes');
 const departemet_activiteRoute= require('./routes/departementActiviteRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
 
 
 
@@ -32,6 +33,7 @@ app.use('/juridique/structure',   structureRoute);
 app.use('/juridique/division', divisionRoute);
 app.use('/juridique/direction_activite', direction_activiteRoutes);
 app.use('/juridique/departemet_activite',departemet_activiteRoute)// role nesxiste pas
+app.use('/juridique/dashboard', dashboardRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ success: false, message: `Route ${req.originalUrl} non trouvée` });

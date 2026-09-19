@@ -164,6 +164,14 @@ Reads: any JWT. Writes (POST/PUT/DELETE): **admin only**. Envelope: `{"success":
 
 Create body: `{"code":"DJ","nom":"Direction Juridique","description"?, <parent field>: "<id>"}` — `code` is auto-uppercased and unique (duplicate → 409, except départements/activités → 400 `"Ce code existe déjà"`). Detail GETs populate children (e.g. a direction's `departements`); `GET /juridique/directions-centrales/<id>/organigramme` returns the full tree for an org-chart screen. Note: the directions **list** includes inactive rows; the départements list only active ones.
 
+**Dashboard KPIs (any JWT, read-only — added Sept 2026):**
+
+| Endpoint | `data` shape | Use |
+|---|---|---|
+| `GET /juridique/dashboard/counters` | `{directionsCentrales, directions, departements, activites, directionsActivite, departementsActivite, divisions, structures}` (integers; directions/départements count active only) | KPI cards |
+| `GET /juridique/dashboard/directions-par-direction-centrale` | `[{directionCentraleId, nom, code, count}, …]` sorted by `count` desc | bar / "top N" chart |
+| `GET /juridique/dashboard/activites-breakdown` | `{directionsActivite, departementsActivite, divisions, structures}` | donut chart |
+
 ---
 
 ## 7. Contracts — CLM (`/clm`) ⭐ the core product

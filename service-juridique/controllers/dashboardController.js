@@ -24,7 +24,7 @@ const Structure             = require('../models/Structure');
 
 const send = (res, status, data) => res.status(status).json(data);
 
-// GET /api/dashboard/counters
+// GET /juridique/dashboard/counters
 // Retourne le nombre total de chaque entité (KPI cards).
 exports.getCounters = async (req, res) => {
   try {
@@ -66,7 +66,7 @@ exports.getCounters = async (req, res) => {
   }
 };
 
-// GET /api/dashboard/directions-par-direction-centrale
+// GET /juridique/dashboard/directions-par-direction-centrale
 // Répartition du nombre de Directions par Direction Centrale
 // (utile pour un graphique "Top N" côté frontend, optionnel).
 exports.getDirectionsParDirectionCentrale = async (req, res) => {
@@ -106,7 +106,7 @@ exports.getDirectionsParDirectionCentrale = async (req, res) => {
   }
 };
 
-// GET /api/dashboard/activites-par-type
+// GET /juridique/dashboard/activites-breakdown
 // Répartition des sous-entités d'activité (utile pour un donut/bar chart).
 exports.getActivitesBreakdown = async (req, res) => {
   try {
