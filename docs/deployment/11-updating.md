@@ -63,7 +63,8 @@ If the status is not empty, the restore copied into the wrong place — check `f
 
 ```bash
 git diff --name-only "$OLD" HEAD -- gateway registry \
-  '*/requirements.txt' '*/migrations/*' '*/package.json' '*/package-lock.json' | sort -u
+  '*/requirements.txt' '*/migrations/*' '*/package.json' '*/package-lock.json' \
+  ':!*/node_modules/*' | sort -u
 ```
 
 Read the list and run the matching rows (skip the rest):
@@ -111,7 +112,7 @@ curl -s -o /dev/null -w 'affectation %{http_code}\n' localhost:8011/affectation/
 curl -s -o /dev/null -w 'clm %{http_code}\n'         localhost:8012/clm/
 ```
 
-Then from your own machine, one authenticated call through the public URL (proves gateway → Eureka → Node and the shared JWT secret):
+Then one authenticated call through the public URL — from the VPS or your own machine (proves nginx → gateway → Eureka → Node and the shared JWT secret):
 
 ```bash
 BASE=https://lexora.duckdns.org
