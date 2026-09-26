@@ -99,6 +99,15 @@ Throwaway seeded accounts, all with password `Test1234!`. They will be reset or 
 | `vp@sonatrach.dz` | `vice_presedent` (spelling is intentional) | VP-gated assignment screens |
 | `dd@sonatrach.dz` | `directeur_direction` | Département assignment screens, contracts of its direction |
 | `rd@sonatrach.dz` | `responsable_departement` | Contract creation, listing, detail, submission |
+| `agent@lexora.test` | `agent` | Read-only view of rd's département contracts |
+| `dc@lexora.test` | `directeur_centrale` | "Contrats de ma direction centrale" (empty until a contract carries its id) |
+| `adc@lexora.test` | `assistant_directeur_centrale` | Same direction centrale as `dc` |
+| `dda@lexora.test` | `directeur_direction_activite` | Direction d'activité screens |
+| `ddiv@lexora.test` | `directeur_division_activite` | "Affectations structures" screens |
+| `rdd@lexora.test` | `responsable_direction_division` | Structure-scoped lookups |
+| `rdepd@lexora.test` | `responsable_departement_division` | Structure-scoped lookups |
+
+Every role in the system has one account. The `@lexora.test` addresses are deliberately non-deliverable (reserved domain); the org ids they carry are fake, so `*_detail` fields in the login response are `null` for all of them.
 
 ## 4. Where things live
 

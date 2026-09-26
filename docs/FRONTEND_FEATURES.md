@@ -51,7 +51,7 @@ Base URL everywhere below: `https://lexora.duckdns.org`. Every authenticated cal
 | all other roles (`agent`, assistants, responsables division…) | **Contrats de mon département** (read, if `departement_id` set) · **Bibliothèque** · **Messagerie** · org lookups |
 | every role | **Profil** (view/edit own) · **Changer le mot de passe** · logout |
 
-Test accounts for each: [SEED_TEST_DATA.md](SEED_TEST_DATA.md) (`admin@sonatrach.dz`, `vp@sonatrach.dz`, `dd@sonatrach.dz`, `rd@sonatrach.dz`, all `Test1234!`).
+Test accounts for each role (all eleven, all `Test1234!`, all live on `https://lexora.duckdns.org`): [SEED_TEST_DATA.md](SEED_TEST_DATA.md) — `admin@sonatrach.dz`, `vp@sonatrach.dz`, `dd@sonatrach.dz`, `rd@sonatrach.dz`, plus `agent`, `dc`, `adc`, `dda`, `ddiv`, `rdd`, `rdepd` `@lexora.test`.
 
 ---
 

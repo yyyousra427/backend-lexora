@@ -12,6 +12,27 @@ Run everything on the **VPS as the `lexora` user**. Each block is copy-paste-rea
 | `vp@sonatrach.dz` | `Test1234!` | `vice_presedent` | Appears in `/affectation/users/directeurs-activite/non-affectes/`; the VP-gated affectation blocks |
 | `dd@sonatrach.dz` | `Test1234!` | `directeur_direction` | Département-assignment screens (`IsDirecteurDirection` block); sees contracts of its `direction_id` |
 | `rd@sonatrach.dz` | `Test1234!` | `responsable_departement` | **The main CLM test account**: create/list/detail/submit contracts on its département |
+| `agent@lexora.test` | `Test1234!` | `agent` | Read-only member of rd's département: `/clm/contrats/` shows the same 2 contracts; `IsAgent` blocks in affectation/CLM |
+| `dc@lexora.test` | `Test1234!` | `directeur_centrale` | Contracts filtered by `direction_centrale_id` (0 rows until a contract carries `64a…0004`); `directeurs-centrale/…` affectation lookups |
+| `adc@lexora.test` | `Test1234!` | `assistant_directeur_centrale` | Same direction centrale as `dc`; `assistants/…` affectation lookups |
+| `dda@lexora.test` | `Test1234!` | `directeur_direction_activite` | Carries `activite_id` + `direction_activite_id`; `directeurs-direction-activite/…` lookups |
+| `ddiv@lexora.test` | `Test1234!` | `directeur_division_activite` | Carries `structure_id` + `division_activite_id`; the "Affectations structures" screens |
+| `rdd@lexora.test` | `Test1234!` | `responsable_direction_division` | Carries `structure_id`; `responsables-direction-division/…` lookups |
+| `rdepd@lexora.test` | `Test1234!` | `responsable_departement_division` | Carries `structure_id`; `responsables-departement-division/…` lookups |
+
+The first four were seeded with the Django shell (Step 1). The seven `@lexora.test` accounts were created **through the admin API** (Step 1b) — that endpoint e-mails the temporary password to the address, so they use the reserved `.test` domain to make sure nothing is ever delivered to a real Sonatrach mailbox. All eleven exist on `https://lexora.duckdns.org` as of 26 Sept 2026 (ids 2–12; `lexora@gmail.com`, id 1, is the superuser created at deployment time).
+
+Fake org ids in use (24-hex, so they pass as Mongo ObjectIds; nothing in service-juridique has these ids, so `*_detail` fields resolve to `null`):
+
+| Constant | Value | Carried by |
+|---|---|---|
+| `DEP` | `64a000000000000000000001` | rd, agent (`departement_id`) |
+| `DIR` | `64a000000000000000000002` | dd, rd, agent (`direction_id`) |
+| `ACT` | `64a000000000000000000003` | dd, dda (`activite_id`) |
+| `DC` | `64a000000000000000000004` | dc, adc (`direction_centrale_id`) |
+| `DA` | `64a000000000000000000005` | dda (`direction_activite_id`) |
+| `DIVA` | `64a000000000000000000006` | ddiv (`division_activite_id`) |
+| `STRUCT` | `64a000000000000000000007` | ddiv, rdd, rdepd (`structure_id`) |
 
 ## Step 1 — Create the users (authentification, MySQL)
 
@@ -47,6 +68,17 @@ EOF
 ```
 
 **Write down the `rd` user id it prints** — Step 3 needs it.
+
+## Step 1b — Create the remaining roles through the API (no shell needed)
+
+Runs from **any machine with Node 18+** against the public URL; it only needs `admin@sonatrach.dz` from Step 1 to exist. It is idempotent — re-running re-checks existing accounts and re-applies their role + org ids:
+
+```bash
+node docs/scripts/seed_test_accounts.mjs            # BASE=https://lexora.duckdns.org by default
+BASE=http://localhost:8083 node docs/scripts/seed_test_accounts.mjs   # against a local gateway
+```
+
+What it does per account: `POST /auth/users/create/` (admin token) → logs in with the `generated_password` from the response → `POST /auth/password/change/` to `Test1234!` → `PATCH /auth/users/<id>/update/` with the role's org ids → final login check. The create call blocks for a while on the SMTP send (fine, the user is saved before the e-mail is attempted).
 
 ## Step 2 (optional) — Seed org structure (service-juridique, MongoDB)
 
@@ -163,7 +195,7 @@ cd /opt/lexora/service_clm && .venv/bin/python manage.py shell -c \
 
 # deactivate (or delete) test users
 cd /opt/lexora/authentification && .venv/bin/python manage.py shell -c \
-  "from api.models import User; User.objects.filter(email__in=['vp@sonatrach.dz','dd@sonatrach.dz','rd@sonatrach.dz']).update(is_active=False)"
+  "from api.models import User; User.objects.filter(email__in=['vp@sonatrach.dz','dd@sonatrach.dz','rd@sonatrach.dz']).update(is_active=False); User.objects.filter(email__endswith='@lexora.test').update(is_active=False)"
 ```
 
 Keep `admin@sonatrach.dz` (with a changed password) or create your real admin before deactivating it.
