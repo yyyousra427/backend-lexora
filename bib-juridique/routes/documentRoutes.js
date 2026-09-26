@@ -10,7 +10,8 @@ const {
     getDocumentById,
     updateDocument,
     deleteDocument,
-    searchDocuments
+    searchDocuments,
+    getStats
 } = require("../controllers/documentController");
 
 // ==========================
@@ -38,6 +39,12 @@ router.get(
 // SEARCH DOCUMENTS
 // GET /bib/search?q=...
 // ==========================
+router.get(
+    "/stats",
+    authMiddleware,
+    getStats
+);
+
 router.get(
     "/search",
     authMiddleware,

@@ -83,6 +83,13 @@ const expect = (group, name, r, cond, extra = '') => (cond ? ok(group, name, ext
     `risques.total=${r.json?.risques?.total}`);
   r = await call('GET', '/clm/contrats/1/', { token: tok.dc });
   expect('clm', 'dc cannot open a contract outside its direction centrale', r, r.status === 403 || r.status === 404, `status=${r.status}`);
+  // dashboard KPI endpoint the frontend dashboard calls (added Sept 2026)
+  r = await call('GET', '/clm/dashboard/stats/', { token: tok.rd });
+  expect('clm', 'GET /clm/dashboard/stats/ (rd) total=2 + shape', r,
+    r.status === 200 && r.json?.data?.total === 2 && Array.isArray(r.json.data.parStatut) && Array.isArray(r.json.data.parType) && 'enRetard' in r.json.data && 'risques' in r.json.data,
+    JSON.stringify(r.json?.data).slice(0, 160));
+  r = await call('GET', '/clm/dashboard/stats/', { token: tok.vp });
+  expect('clm', 'GET /clm/dashboard/stats/ (vp) scoped to 0', r, r.status === 200 && r.json?.data?.total === 0);
 
   // ---------- 3. affectation ----------
   r = await call('GET', '/affectation/users/directeurs-activite/non-affectes/', { token: tok.admin });
@@ -146,6 +153,12 @@ const expect = (group, name, r, cond, extra = '') => (cond ? ok(group, name, ext
   expect('bib', 'GET /bib/documents (rd)', r, r.status === 200);
   r = await call('GET', '/bib/documents');
   expect('bib', 'GET /bib/documents without token -> 401', r, r.status === 401);
+  r = await call('GET', '/bib/stats/', { token: tok.rd });
+  expect('bib', 'GET /bib/stats/ (dashboard KPI, added Sept 2026)', r,
+    r.status === 200 && r.json?.success === true && typeof r.json.data?.total === 'number' && Array.isArray(r.json.data?.parCategorie),
+    JSON.stringify(r.json?.data).slice(0, 120));
+  r = await call('GET', '/bib/documents?limit=1&statut=EN_VIGUEUR', { token: tok.rd });
+  expect('bib', 'GET /bib/documents?statut=EN_VIGUEUR filters', r, r.status === 200 && typeof r.json.total === 'number');
   r = await call('GET', '/uploads/');
   expect('bib', '/uploads/ reachable through gateway (not 503)', r, r.status !== 503 && r.status !== 0, `status=${r.status}`);
 

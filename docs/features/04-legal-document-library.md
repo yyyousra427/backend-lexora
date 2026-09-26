@@ -26,7 +26,8 @@ A library of legal reference documents (laws, decrees, templates): upload a PDF 
 | Method | Path | Auth | Purpose |
 |---|---|---|---|
 | POST | `/bib/documents` | JWT | create document — multipart form, file field **`pdf`** + metadata fields |
-| GET | `/bib/documents` | JWT | list all documents |
+| GET | `/bib/documents` | JWT | list all documents — filters `?categorie=`, `?statut=` (added Sept 2026), `?page=&limit=` |
+| GET | `/bib/stats` | JWT | dashboard KPI (added Sept 2026): `{"success":true,"data":{"total","enVigueur","parCategorie":[{"_id":"LOIS","total":n},…],"parStatut":[{"_id":"EN_VIGUEUR","total":n},…]}}` |
 | GET | `/bib/search?q=…` | JWT | search documents |
 | GET | `/bib/documents/:id` | JWT | document detail |
 | PUT | `/bib/documents/:id` | JWT | update metadata and optionally replace the PDF (`pdf` field) |

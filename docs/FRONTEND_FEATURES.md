@@ -171,6 +171,8 @@ Create body: `{"code":"DJ","nom":"Direction Juridique","description"?, <parent f
 | `GET /juridique/dashboard/counters` | `{directionsCentrales, directions, departements, activites, directionsActivite, departementsActivite, divisions, structures}` (integers; directions/départements count active only) | KPI cards |
 | `GET /juridique/dashboard/directions-par-direction-centrale` | `[{directionCentraleId, nom, code, count}, …]` sorted by `count` desc | bar / "top N" chart |
 | `GET /juridique/dashboard/activites-breakdown` | `{directionsActivite, departementsActivite, divisions, structures}` | donut chart |
+| `GET /clm/dashboard/stats/` | `{total, enRetard, expires, expirantBientot, risques:{critiques, non_resolus}, parStatut:[{statut, statut_label, total}], parType:[{code, type_contrat, total}]}` — scoped like `/clm/contrats/` | contract KPI cards + "par statut" / "par type" lists (added 26 Sept 2026; the deployed frontend already calls it) |
+| `GET /bib/stats/` | `{total, enVigueur, parCategorie:[{_id, total}], parStatut:[{_id, total}]}` | library KPI cards + "documents par catégorie" (added 26 Sept 2026; the deployed frontend already calls it). `GET /bib/documents?statut=EN_VIGUEUR` now really filters by statut |
 
 ---
 

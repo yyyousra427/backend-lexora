@@ -87,6 +87,10 @@ async (req, res) => {
             filter.categorie =
                 req.query.categorie;
         }
+        if (req.query.statut) {
+            filter.statut =
+                req.query.statut;
+        }
 
         const documents =
             await DocumentJuridique
@@ -376,6 +380,36 @@ exports.createDocument = async (req, res) => {
 
         console.error(error);
 
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+// ======================
+// STATS (dashboard)
+// GET /bib/stats
+// ======================
+exports.getStats = async (req, res) => {
+    try {
+        const [total, enVigueur, parCategorie, parStatut] = await Promise.all([
+            DocumentJuridique.countDocuments(),
+            DocumentJuridique.countDocuments({ statut: "EN_VIGUEUR" }),
+            DocumentJuridique.aggregate([
+                { $group: { _id: "$categorie", total: { $sum: 1 } } },
+                { $sort: { total: -1, _id: 1 } }
+            ]),
+            DocumentJuridique.aggregate([
+                { $group: { _id: "$statut", total: { $sum: 1 } } },
+                { $sort: { total: -1, _id: 1 } }
+            ])
+        ]);
+        res.json({
+            success: true,
+            data: { total, enVigueur, parCategorie, parStatut }
+        });
+    } catch (error) {
         res.status(500).json({
             success: false,
             message: error.message

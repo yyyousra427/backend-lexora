@@ -66,6 +66,7 @@ All paths under `/clm/`, JWT-authenticated (simplejwt).
 | Method | Path | Purpose |
 |---|---|---|
 | GET | `/clm/contrats/` | list contracts (scoped by caller's role/org) |
+| GET | `/clm/dashboard/stats/` | dashboard KPI on the same visibility scope as the list (added Sept 2026): `{"success":true,"data":{"total","enRetard","expires","expirantBientot","risques":{"critiques","non_resolus"},"parStatut":[{"statut","statut_label","total"}],"parType":[{"code","type_contrat","total"}]}}` — `enRetard` mirrors `Contrat.est_en_retard`; `expires` = `date_fin` passed but statut neither `expire` nor `resilie`; `expirantBientot` = `date_fin` within 30 days |
 | GET | `/clm/contrats/<id>/` | contract detail |
 | GET | `/clm/contrats/<id>/risques/` | detected risks |
 | GET | `/clm/contrats/<id>/alertes/` | alerts for the contract |

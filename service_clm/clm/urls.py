@@ -14,6 +14,7 @@ urlpatterns = [
     path('contrats/formulaire/',  views.create_contrat_formulaire, name='create-contrat-formulaire'),
     path('contrats/<int:contrat_id>/pdf/', views.generer_pdf_contrat, name='generer-pdf-contrat'),
     path('contrats/',          views.list_contrats,   name='list-contrats'),
+    path('dashboard/stats/', views.dashboard_stats, name='dashboard-stats'),
     path('contrats/<int:contrat_id>/', views.detail_contrat, name='detail-contrat'),
     path('contrats/<int:contrat_id>/analyser/', views.analyser_contrat, name='analyser_contrat'),
     path('contrats/<int:contrat_id>/alertes/',  views.get_alertes_contrat, name='alertes_contrat'),

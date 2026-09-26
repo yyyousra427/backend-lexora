@@ -3094,3 +3094,119 @@ def get_alertes_contrat(request, contrat_id):
         'alerts':     alertes,
         'count':      len(alertes),
     })
+
+
+# ═══════════════════════════════════════════════════════════════════
+#  DASHBOARD — KPI contrats
+# ═══════════════════════════════════════════════════════════════════
+
+def _contrats_visibles(user_info):
+    """
+    Même règle de visibilité que list_contrats :
+      admin / juridique      → tous les contrats
+      directeur_centrale     → contrats de sa direction centrale
+      directeur_direction    → contrats de sa direction
+      tout autre rôle        → contrats de son département
+    """
+    role                  = user_info.get('role', '')
+    departement_id        = str(user_info.get('departement_id', '') or '')
+    direction_id          = str(user_info.get('direction_id', '') or '')
+    direction_centrale_id = str(user_info.get('direction_centrale_id', '') or '')
+
+    qs = Contrat.objects.all()
+    if role in ('admin', 'juridique'):
+        return qs
+    if role == 'directeur_centrale':
+        return qs.filter(direction_centrale_id=direction_centrale_id)
+    if role == 'directeur_direction':
+        return qs.filter(direction_id=direction_id)
+    return qs.filter(departement_id=departement_id)
+
+
+@api_view(['GET'])
+@authentication_classes([RemoteJWTAuthentication])
+@permission_classes([IsAuthenticated])
+def dashboard_stats(request):
+    """
+    GET /clm/dashboard/stats/
+    KPI du tableau de bord, sur le périmètre visible par l'utilisateur
+    (mêmes règles que /clm/contrats/).
+
+    Réponse :
+    {
+      "success": true,
+      "data": {
+        "total": 12,
+        "enRetard": 3,              # livraison en retard (cf. Contrat.est_en_retard)
+        "expires": 1,               # date_fin dépassée mais statut ni expiré ni résilié
+        "expirantBientot": 2,       # date_fin dans les 30 prochains jours
+        "risques": {"critiques": 4, "non_resolus": 9},
+        "parStatut": [{"statut": "actif", "statut_label": "Actif", "total": 7}, ...],
+        "parType":   [{"code": "service", "type_contrat": "Services / خدمات", "total": 5}, ...]
+      }
+    }
+    """
+    from datetime import timedelta
+    from django.db.models import Count, F, Q
+    from .models import RisqueContrat
+
+    try:
+        user_info = get_user_info_from_auth(request.auth)
+        if not user_info:
+            return Response({'success': False, 'error': 'Non authentifié'}, status=401)
+
+        qs    = _contrats_visibles(user_info)
+        today = timezone.now().date()
+        clos  = ('expire', 'resilie')
+
+        total = qs.count()
+
+        # Retard de livraison — transcription en requête de Contrat.est_en_retard
+        en_retard = (
+            qs.exclude(statut__in=clos)
+              .filter(date_limite_livraison__isnull=False)
+              .filter(
+                  Q(date_fin__isnull=True,  date_limite_livraison__lt=today) |
+                  Q(date_fin__isnull=False, date_fin__gt=F('date_limite_livraison'))
+              )
+              .count()
+        )
+        expires = qs.exclude(statut__in=clos).filter(date_fin__lt=today).count()
+        expirant_bientot = (
+            qs.exclude(statut__in=clos)
+              .filter(date_fin__gte=today, date_fin__lte=today + timedelta(days=30))
+              .count()
+        )
+
+        risques_actifs = RisqueContrat.objects.filter(contrat__in=qs, resolu=False)
+        risques = {
+            'critiques':   risques_actifs.filter(severite='critique').count(),
+            'non_resolus': risques_actifs.count(),
+        }
+
+        statut_labels = dict(Contrat.STATUTS_CONTRAT)
+        type_labels   = dict(Contrat.TYPES_CONTRAT)
+        par_statut = [
+            {'statut': r['statut'], 'statut_label': statut_labels.get(r['statut'], r['statut']), 'total': r['n']}
+            for r in qs.values('statut').annotate(n=Count('id')).order_by('-n', 'statut')
+        ]
+        par_type = [
+            {'code': r['type_contrat'], 'type_contrat': type_labels.get(r['type_contrat'], r['type_contrat']), 'total': r['n']}
+            for r in qs.values('type_contrat').annotate(n=Count('id')).order_by('-n', 'type_contrat')
+        ]
+
+        return Response({
+            'success': True,
+            'data': {
+                'total':           total,
+                'enRetard':        en_retard,
+                'expires':         expires,
+                'expirantBientot': expirant_bientot,
+                'risques':         risques,
+                'parStatut':       par_statut,
+                'parType':         par_type,
+            },
+        })
+    except Exception as e:
+        print(f'[CLM] ❌ dashboard_stats: {e}')
+        return Response({'success': False, 'error': str(e)}, status=500)
