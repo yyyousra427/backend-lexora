@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Lexora — Comptes de test et scénarios par rôle</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm 18mm 16mm; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: "Segoe UI", Arial, Helvetica, sans-serif; font-size: 10.5pt; line-height: 1.45; color: #1a1f2b; }
+  h1 { font-size: 22pt; margin: 0 0 4px 0; color: #0b2545; letter-spacing: -0.2px; }
+  h2 { font-size: 14pt; margin: 22px 0 8px 0; color: #0b2545; border-bottom: 2px solid #0b2545; padding-bottom: 3px; page-break-after: avoid; }
+  h3 { font-size: 11.5pt; margin: 14px 0 6px 0; color: #13315c; page-break-after: avoid; }
+  p { margin: 6px 0; }
+  .sub { color: #4b5563; font-size: 10.5pt; margin-bottom: 14px; }
+  .meta { display: flex; gap: 24px; flex-wrap: wrap; font-size: 9.5pt; color: #374151; margin-bottom: 10px; }
+  .meta b { color: #0b2545; }
+  .box { border: 1px solid #cbd5e1; border-left: 5px solid #0b2545; background: #f5f8fc; padding: 8px 12px; margin: 10px 0; page-break-inside: avoid; }
+  .box.warn { border-left-color: #b45309; background: #fff8ec; }
+  .box.ok { border-left-color: #15803d; background: #f0fdf4; }
+  .box b { color: #0b2545; }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0 12px 0; font-size: 9.5pt; page-break-inside: auto; }
+  tr { page-break-inside: avoid; }
+  th, td { border: 1px solid #cbd5e1; padding: 5px 7px; vertical-align: top; text-align: left; }
+  th { background: #e8eef7; color: #0b2545; font-weight: 600; }
+  tbody tr:nth-child(even) td { background: #fafbfd; }
+  code { font-family: Consolas, "Courier New", monospace; font-size: 9.3pt; background: #eef2f7; padding: 1px 4px; border-radius: 3px; white-space: nowrap; }
+  .pw { font-family: Consolas, "Courier New", monospace; font-weight: 700; font-size: 12pt; color: #0b2545; }
+  ul { margin: 4px 0 8px 18px; padding: 0; }
+  li { margin: 2px 0; }
+  .role { page-break-inside: avoid; margin-bottom: 10px; }
+  .tag { display: inline-block; font-size: 8.5pt; padding: 1px 7px; border-radius: 10px; background: #e8eef7; color: #0b2545; margin-left: 6px; vertical-align: middle; font-weight: 600; }
+  .tag.main { background: #dcfce7; color: #166534; }
+  .pb { page-break-before: always; }
+  .small { font-size: 9pt; color: #4b5563; }
+  .foot { margin-top: 26px; font-size: 8.5pt; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 6px; }
+  .check td:first-child { width: 22px; text-align: center; font-size: 12pt; color: #94a3b8; }
+</style>
+</head>
+<body>
+
+<h1>Lexora — Comptes de test et scénarios par rôle</h1>
+<p class="sub">Guide de recette : un compte par rôle, les données de démonstration déjà en place, et ce que chaque compte doit pouvoir faire.</p>
+
+<div class="meta">
+  <span><b>Application :</b> https://lexora-dz.netlify.app</span>
+  <span><b>API :</b> https://lexora.duckdns.org</span>
+  <span><b>Version du guide :</b> 26 septembre 2026</span>
+</div>
+
+<div class="box">
+  <b>Mot de passe commun à tous les comptes de test :</b> <span class="pw">Test1234!</span><br>
+  <span class="small">Ces comptes sont des comptes de démonstration. Ils seront désactivés ou remplacés par de vrais comptes avant la mise en service. Merci de ne pas modifier leur mot de passe pendant la recette (ou de le remettre à <code>Test1234!</code> après votre test).</span>
+</div>
+
+<h2>1. Les onze comptes</h2>
+<p>Chaque rôle de la plateforme dispose d'un compte. Les quatre premiers portent une adresse <code>@sonatrach.dz</code> fictive ; les sept autres une adresse <code>@lexora.test</code> volontairement non délivrable (aucun courriel réel n'est envoyé à ces adresses).</p>
+
+<table>
+  <thead>
+    <tr><th style="width:26%">Identifiant (e-mail)</th><th style="width:22%">Rôle dans l'application</th><th style="width:16%">Nom affiché</th><th>Périmètre du compte</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>admin@sonatrach.dz</code></td><td>Admin</td><td>Root Admin</td><td>Tout : utilisateurs, affectations, structure organisationnelle, tous les contrats</td></tr>
+    <tr><td><code>vp@sonatrach.dz</code></td><td>Vice Presedent <span class="small">(libellé tel qu'affiché)</span></td><td>Karim Benali</td><td>Aucune activité affectée (apparaît volontairement dans « directeurs sans activité »)</td></tr>
+    <tr><td><code>dd@sonatrach.dz</code></td><td>Directeur de Direction</td><td>Sara Meziane</td><td>Direction n° 2 (activité n° 3) — voit les contrats de sa direction</td></tr>
+    <tr><td><code>rd@sonatrach.dz</code></td><td>Responsable de Département</td><td>Yacine Haddad</td><td>Département n° 1 de la direction n° 2 — <b>gère les contrats</b> de son département</td></tr>
+    <tr><td><code>agent@lexora.test</code></td><td>Agent</td><td>Lina Bouzid</td><td>Même département que le responsable ci-dessus — lecture seule</td></tr>
+    <tr><td><code>dc@lexora.test</code></td><td>Directeur Centrale</td><td>Amine Cherif</td><td>Direction centrale n° 4 — voit les contrats de sa direction centrale</td></tr>
+    <tr><td><code>adc@lexora.test</code></td><td>Assistant Directeur Centrale</td><td>Nadia Kaci</td><td>Même direction centrale n° 4</td></tr>
+    <tr><td><code>dda@lexora.test</code></td><td>Directeur Direction Activité</td><td>Rachid Ziani</td><td>Activité n° 3, direction d'activité n° 5</td></tr>
+    <tr><td><code>ddiv@lexora.test</code></td><td>Directeur Division Activité</td><td>Samir Toumi</td><td>Division d'activité n° 6, structure n° 7</td></tr>
+    <tr><td><code>rdd@lexora.test</code></td><td>Responsable Direction Division</td><td>Leila Brahimi</td><td>Structure n° 7</td></tr>
+    <tr><td><code>rdepd@lexora.test</code></td><td>Responsable Département Division</td><td>Mourad Saidi</td><td>Structure n° 7</td></tr>
+  </tbody>
+</table>
+
+<div class="box warn">
+  <b>À savoir avant de tester :</b> les unités organisationnelles (« direction n° 2 », « département n° 1 »…) rattachées aux comptes de test sont des identifiants techniques de démonstration. Leur <b>nom peut donc apparaître vide</b> dans le profil ou dans les listes de contrats. Ce n'est pas une anomalie : les vraies directions et départements seront créés par l'administrateur (section 3, scénario Admin) et rattachés aux vrais utilisateurs.
+</div>
+
+<h2>2. Données de démonstration déjà présentes</h2>
+<p>Deux contrats existent dans le département du responsable de département (<code>rd@sonatrach.dz</code>). Ils sont visibles par ce compte, par l'agent, par le directeur de direction et par l'administrateur.</p>
+
+<table>
+  <thead><tr><th style="width:16%">N° contrat</th><th style="width:26%">Titre</th><th style="width:12%">Type</th><th style="width:11%">Statut</th><th>Partie B / montant / dates</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><code>CTR-2026-001</code></td><td>Fourniture équipements de forage</td><td>Fournitures</td><td>Actif</td>
+      <td>Sarl EquipDZ (Algérie, partie nationale) — 12 500 000 DZD — signé le 10/01/2026, du 01/02/2026 au 01/02/2027, délai de livraison 6 mois.<br>
+      <b>2 risques</b> attachés : <i>R-01</i> retard de livraison (sévérité élevée, art. 9) et <i>I-06</i> clause de pénalités imprécise (sévérité moyenne, art. 11). Une métadonnée « pénalités de retard : 0,5 % par semaine, plafonné à 10 % ».</td>
+    </tr>
+    <tr>
+      <td><code>CTR-2026-002</code></td><td>Prestation maintenance industrielle</td><td>Services</td><td>Brouillon</td>
+      <td>TotalEnergies Services (France, partie étrangère, contrat marqué <b>international</b> automatiquement) — 800 000 EUR — début le 01/03/2026, délai de livraison 3 mois. Aucun risque.</td>
+    </tr>
+  </tbody>
+</table>
+<p class="small">Les deux contrats sont signalés « en retard de livraison » : leurs dates limites (01/08/2026 et 01/06/2026) sont dépassées à la date de ce guide. C'est le comportement attendu du calcul automatique.</p>
+
+<h2 class="pb">3. Scénarios de test par rôle</h2>
+<p>Pour chaque compte : se connecter, vérifier le menu proposé, dérouler les points ci-dessous, puis se déconnecter. Tout écart avec le « résultat attendu » est à signaler (section 5).</p>
+
+<div class="role">
+  <h3>Admin — <code>admin@sonatrach.dz</code> <span class="tag">tout accès</span></h3>
+  <ul>
+    <li><b>Utilisateurs :</b> la liste affiche les onze comptes de test (plus le compte technique créé à l'installation). Créer un utilisateur avec <b>votre vraie adresse</b> : il reçoit par e-mail un mot de passe temporaire, puis se connecte et le change. Modifier un rôle, désactiver puis réactiver un compte.</li>
+    <li><b>Structure organisationnelle :</b> créer une direction centrale, puis une direction rattachée, puis un département ; créer une activité, une direction d'activité, une division et une structure. Modifier et supprimer chacun. Le tableau de bord (compteurs) doit refléter les créations.</li>
+    <li><b>Affectation des rôles :</b> affecter un utilisateur à une direction / un département nouvellement créés ; son profil doit ensuite afficher le nom de l'unité.</li>
+    <li><b>Contrats :</b> voit les deux contrats de démonstration (et tous ceux créés pendant la recette), en lecture, avec export PDF.</li>
+    <li><b>Bibliothèque juridique</b> (dépôt et consultation de documents) et <b>Messagerie</b>.</li>
+  </ul>
+</div>
+
+<div class="role">
+  <h3>Responsable de Département — <code>rd@sonatrach.dz</code> <span class="tag main">compte principal des contrats</span></h3>
+  <ul>
+    <li><b>Mes contrats :</b> la liste affiche exactement les deux contrats de la section 2. Le détail de <code>CTR-2026-001</code> montre ses 2 risques et sa métadonnée.</li>
+    <li><b>Nouveau contrat (formulaire) :</b> créer un contrat complet ; il apparaît dans la liste en statut brouillon.</li>
+    <li><b>Importer un PDF :</b> déposer un contrat PDF ; les champs sont pré-remplis par la lecture automatique (OCR), à vérifier puis enregistrer.</li>
+    <li><b>Soumettre</b> un contrat brouillon, puis consulter les <b>risques et alertes</b> générés. Export PDF du contrat.</li>
+    <li><b>Bibliothèque</b> et <b>Messagerie</b>.</li>
+  </ul>
+</div>
+
+<div class="role">
+  <h3>Directeur de Direction — <code>dd@sonatrach.dz</code></h3>
+  <ul>
+    <li><b>Mes départements :</b> affecter, réaffecter et retirer un responsable de département, uniquement dans sa direction.</li>
+    <li><b>Contrats de ma direction :</b> voit les deux contrats de démonstration (lecture, risques inclus), sans pouvoir les modifier.</li>
+    <li><b>Bibliothèque</b> et <b>Messagerie</b>.</li>
+  </ul>
+</div>
+
+<div class="role">
+  <h3>Vice Presedent — <code>vp@sonatrach.dz</code></h3>
+  <ul>
+    <li><b>Affectations activité :</b> écrans des directions d'activité et divisions d'activité.</li>
+    <li>Côté Admin, ce compte figure dans la liste des « directeurs sans activité affectée » : l'affecter à une activité doit le faire disparaître de cette liste.</li>
+    <li><b>Contrats :</b> aucun contrat visible (le compte n'a pas de département) — résultat attendu.</li>
+  </ul>
+</div>
+
+<div class="role">
+  <h3>Agent — <code>agent@lexora.test</code></h3>
+  <ul>
+    <li><b>Contrats de mon département :</b> les deux mêmes contrats que le responsable, en lecture seule (pas de création, pas de modification).</li>
+    <li><b>Bibliothèque</b>, <b>Messagerie</b>, consultation de l'organigramme.</li>
+  </ul>
+</div>
+
+<div class="role">
+  <h3>Directeur Centrale — <code>dc@lexora.test</code> et Assistant — <code>adc@lexora.test</code></h3>
+  <ul>
+    <li><b>Contrats de ma direction centrale :</b> liste vide pour l'instant (aucun contrat de démonstration n'est rattaché à cette direction centrale) — résultat attendu.</li>
+    <li>Côté Admin, le directeur centrale apparaît dans « directeurs centrale avec affectation » ; l'assistant dans les assistants de la même direction centrale.</li>
+    <li><b>Bibliothèque</b> et <b>Messagerie</b>.</li>
+  </ul>
+</div>
+
+<div class="role">
+  <h3>Directeur Direction Activité — <code>dda@lexora.test</code></h3>
+  <ul>
+    <li>Écrans de la direction d'activité ; le compte est rattaché à l'activité n° 3 et à la direction d'activité n° 5.</li>
+    <li><b>Bibliothèque</b> et <b>Messagerie</b>.</li>
+  </ul>
+</div>
+
+<div class="role">
+  <h3>Directeur Division Activité — <code>ddiv@lexora.test</code></h3>
+  <ul>
+    <li><b>Affectations structures :</b> panneaux direction et département de la structure n° 7.</li>
+    <li><b>Bibliothèque</b> et <b>Messagerie</b>.</li>
+  </ul>
+</div>
+
+<div class="role">
+  <h3>Responsable Direction Division — <code>rdd@lexora.test</code> et Responsable Département Division — <code>rdepd@lexora.test</code></h3>
+  <ul>
+    <li>Consultation des membres et unités de la structure n° 7 ; <b>Bibliothèque</b> et <b>Messagerie</b>.</li>
+  </ul>
+</div>
+
+<div class="role">
+  <h3>Pour chaque compte, quel que soit le rôle</h3>
+  <ul>
+    <li><b>Profil :</b> consulter et modifier ses informations (téléphone, adresse, photo).</li>
+    <li><b>Changer le mot de passe :</b> tester avec un compte, puis <b>remettre</b> <code>Test1234!</code>.</li>
+    <li><b>Déconnexion</b>, puis vérifier qu'un retour arrière ne réaffiche pas les données.</li>
+    <li><b>Messagerie :</b> envoyer un message entre deux comptes ouverts dans deux navigateurs ; il doit arriver sans rechargement.</li>
+  </ul>
+</div>
+
+<h2 class="pb">4. Points connus (pour éviter les faux signalements)</h2>
+<table>
+  <tbody>
+    <tr><td style="width:34%"><b>Nom d'unité vide sur un compte de test</b></td><td>Normal : les comptes de test pointent vers des unités de démonstration sans nom. Les unités créées par l'Admin pendant la recette s'affichent, elles, correctement.</td></tr>
+    <tr><td><b>« Mot de passe oublié » sur un compte de test</b></td><td>Ne fonctionne pas : ces adresses ne reçoivent pas de courriel. Utiliser le mot de passe commun, ou demander à l'Admin.</td></tr>
+    <tr><td><b>Création d'utilisateur</b></td><td>Envoie un vrai e-mail avec un mot de passe temporaire : utiliser une adresse que vous consultez.</td></tr>
+    <tr><td><b>Création de contrat</b></td><td>Deux chemins : le formulaire et l'import PDF. Le responsable de département est le seul rôle autorisé à créer, modifier et soumettre un contrat.</td></tr>
+    <tr><td><b>Contrats « en retard »</b></td><td>Les deux contrats de démonstration ont des dates limites passées ; l'indicateur de retard est donc attendu.</td></tr>
+    <tr><td><b>Contrats visibles par rôle</b></td><td>Admin : tous. Directeur centrale : ceux de sa direction centrale. Directeur de direction : ceux de sa direction. Tous les autres rôles : ceux de leur département (aucun si le compte n'a pas de département).</td></tr>
+  </tbody>
+</table>
+
+<h2>5. Signaler une anomalie</h2>
+<p>Pour chaque écart constaté, merci de transmettre :</p>
+<table class="check">
+  <tbody>
+    <tr><td>☐</td><td>Le compte utilisé (e-mail) et le rôle</td></tr>
+    <tr><td>☐</td><td>L'écran ou l'adresse de la page, et l'heure approximative</td></tr>
+    <tr><td>☐</td><td>Les étapes effectuées, le résultat attendu et le résultat observé</td></tr>
+    <tr><td>☐</td><td>Une capture d'écran (avec le message d'erreur s'il y en a un)</td></tr>
+  </tbody>
+</table>
+
+<div class="box ok">
+  <b>Rappel sécurité :</b> avant la mise en service, tous les comptes de test seront désactivés et l'administrateur de production recevra ses propres identifiants. Ne pas saisir de données réelles sensibles pendant la recette.
+</div>
+
+<p class="foot">Lexora — guide de recette des comptes et rôles — 26/09/2026. Environnement de test : https://lexora-dz.netlify.app (interface) et https://lexora.duckdns.org (API).</p>
+
+</body>
+</html>

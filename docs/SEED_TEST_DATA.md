@@ -4,6 +4,10 @@ Run everything on the **VPS as the `lexora` user**. Each block is copy-paste-rea
 
 > These are throwaway test credentials. If any of these accounts survive into real use, change the passwords (all set to `Test1234!` here). No welcome emails are sent by these scripts.
 
+**Client-facing version:** [Lexora-Comptes-de-test.pdf](Lexora-Comptes-de-test.pdf) (French, 5 pages: accounts, seeded data, per-role test scenarios, known non-bugs, how to report). Source: `scripts/Lexora-Comptes-de-test.html` — regenerate with headless Edge/Chrome: `msedge --headless=new --print-to-pdf=<out.pdf> --no-pdf-header-footer file:///<path>/Lexora-Comptes-de-test.html`.
+
+**Automated check of the deployed stack:** `node docs/scripts/live_smoke_test.mjs` logs in as all eleven accounts and exercises auth, CLM visibility per role, affectation lookups, the juridique org CRUD + dashboard counters (admin round-trip, self-cleaning), bib and notifications through the public gateway. Exit code 1 on any failure; a `503 from gateway` detail means that Node service is not registered in Eureka (see docs/deployment/11-updating.md).
+
 ## Test accounts created below
 
 | Email | Password | Role | What it can exercise |
